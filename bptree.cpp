@@ -145,11 +145,11 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			cursor->size++;
 			cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
 			cursor->ptr[cursor->size-1] = NULL;
-			cout<<"Inserted 148 :  "<<x<<" successfully\n";
+			cout<<"Inserted "<<x<<" successfully\n";
 		}
 		else
 		{
-			cout<<"Inserted 152 :  "<<x<<" successfully\n";
+			cout<<"Inserted "<<x<<" successfully\n";
 			cout<<"Overflow in leaf node!\nSplitting leaf node\n";
 			//overflow condition
 			//create new leaf node
@@ -386,9 +386,9 @@ BPTree<key_type,val_type>::~BPTree()
 //to create a fresh tree, do not give any command line argument
 int main(int argc, char* argv[])
 {
-	BPTree<double,double> bpt;//B+ tree object that carries out all the operations
+	BPTree<string,string> bpt;//B+ tree object that carries out all the operations
 	string command;
-	double x;
+	string x;
 	bool close = false;
 	string logBuffer;//used to save into log
 	ifstream fin;
