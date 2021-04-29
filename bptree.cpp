@@ -4,6 +4,8 @@
 #include<fstream>
 #include<climits>
 #include<typeinfo>
+#include<cmath>
+
 using namespace std;
 int MAX; //size of each node
 
@@ -47,6 +49,7 @@ Node<key_type,val_type>::Node()
 	//dynamic memory allocation
 	key = new key_type[MAX];
 	ptr = new Node<key_type,val_type>*[MAX+1];
+	IS_LEAF = false;
 }
 
 template <typename key_type, typename val_type>	
@@ -156,7 +159,7 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			//create new leaf node
 			Node<key_type,val_type>* newLeaf = new Node<key_type,val_type>;
 			//create a virtual node and insert x into it
-			key_type virtualNode[MAX+2];
+			key_type virtualNode[MAX+1];
 			for(int i = 0; i < MAX; i++)
 			{
 				virtualNode[i] = cursor->key[i];
@@ -164,11 +167,11 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			int i = 0, j;
 			while(x > virtualNode[i] && i < MAX) i++;
 			//make space for new key
-			for(int j = MAX+1;j > i; j--)
+			for(int j = MAX;j > i; j--)
 			{
 				virtualNode[j] = virtualNode[j-1];
 			}
-			virtualNode[i] = x; 
+			virtualNode[i] = x; 	
 			newLeaf->IS_LEAF = true;
 			//split the cursor into two leaf nodes
 			cursor->size = (MAX+1)/2;
@@ -183,7 +186,7 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			{
 				cursor->key[i] = virtualNode[i];
 			}
-			for(i = 0, j = cursor->size; i < newLeaf->size; i++, j++)
+			for(i = 0, j = cursor->size; i <= newLeaf->size; i++, j++)
 			{
 				newLeaf->key[i] = virtualNode[j];
 			}
@@ -253,22 +256,22 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		int i = 0, j;
 		while(x > virtualKey[i] && i < MAX) i++;
 		//make space for new key
-		for(int j = MAX+1;j > i; j--)
+		for(int j = MAX;j > i; j--)
 		{
 			virtualKey[j] = virtualKey[j-1];
 		}
-		virtualKey[i] = x; 
+		virtualKey[i] = x;
 		//make space for new ptr
-		for(int j = MAX+2;j > i+1; j--)
+		for(int j = MAX+1;j > i+1; j--)
 		{
 			virtualPtr[j] = virtualPtr[j-1];
 		}
 		virtualPtr[i+1] = child; 
 		newInternal->IS_LEAF = false;
 		//split cursor into two nodes
-		cursor->size = (MAX+1)/2;
-		newInternal->size = MAX-(MAX+1)/2;
-		//give elements and pointers to the new node
+		cursor->size = ceil((MAX+1)/2) - 1;
+		newInternal->size = (MAX+1)-cursor->size;
+		//give elements and pointers to the new node		
 		for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
 		{
 			newInternal->key[i] = virtualKey[j];
@@ -276,6 +279,18 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
 		{
 			newInternal->ptr[i] = virtualPtr[j];
+		}
+		for(i = 0; i < cursor->size; i++, j++)
+		{
+			cursor->key[i] = virtualKey[i];
+		}
+		for(i = 0; i < MAX; i++, j++)
+		{
+			cursor->key[i] = virtualKey[i];
+		}
+		for(i = 0; i < MAX+1; i++, j++)
+		{
+			cursor->ptr[i] = virtualPtr[i];
 		}
 		// m = cursor->key[cursor->size]
 		if(cursor == root)
