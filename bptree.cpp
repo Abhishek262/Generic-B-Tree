@@ -19,6 +19,7 @@ class Node
 {
 	bool IS_LEAF;
 	key_type *key;
+	val_type record;
 	int size;
 	Node<key_type,val_type>** ptr;
 	friend class BPTree<key_type,val_type>;
@@ -270,7 +271,7 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		newInternal->IS_LEAF = false;
 		//split cursor into two nodes
 		cursor->size = ceil((MAX+1)/2) - 1;
-		newInternal->size = (MAX+1)-cursor->size;
+		newInternal->size = MAX-cursor->size;
 		//give elements and pointers to the new node		
 		for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
 		{
@@ -280,6 +281,7 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		{
 			newInternal->ptr[i] = virtualPtr[j];
 		}
+		newInternal->ptr[i] = NULL;
 		for(i = 0; i < cursor->size; i++, j++)
 		{
 			cursor->key[i] = virtualKey[i];
