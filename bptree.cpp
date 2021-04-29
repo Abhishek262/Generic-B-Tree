@@ -8,20 +8,22 @@ int MAX; //size of each node
 
 //find, copy and replace STL functions : iterator
 //make data stored generic and its pointers
+template<typename k, typename v>
+class BPTree;
 
-template <typename key_type = int, typename val_type = int>
+template <typename key_type, typename val_type>
 class Node
 {
 	bool IS_LEAF;
 	key_type *key;
 	int size;
 	Node<key_type,val_type>** ptr;
-	friend class BPTree;
+	friend class BPTree<key_type,val_type>;
 public:
 	Node();
 };
 
-template <typename key_type, typename val_type>	
+template <typename key_type = int, typename val_type = int>	
 class BPTree
 {
 	Node<key_type,val_type> *root;
@@ -103,7 +105,7 @@ void BPTree<key_type,val_type>::insert(val_type x)
 		root->key[0] = x;
 		root->IS_LEAF = true;
 		root->size = 1;
-		cout<<"Created root\nInserted "<<x<<" successfully\n";
+		// cout<<"Created root\nInserted "<<x<<" successfully\n";
 	}
 	else
 	{
@@ -143,11 +145,11 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			cursor->size++;
 			cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
 			cursor->ptr[cursor->size-1] = NULL;
-			cout<<"Inserted "<<x<<" successfully\n";
+			cout<<"Inserted 148 "<<x<<" successfully\n";
 		}
 		else
 		{
-			cout<<"Inserted "<<x<<" successfully\n";
+			cout<<"Inserted 152 "<<x<<" successfully\n";
 			cout<<"Overflow in leaf node!\nSplitting leaf node\n";
 			//overflow condition
 			//create new leaf node
@@ -235,10 +237,10 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		cout<<"Overflow in internal node!\nSplitting internal node\n";
 		//if overflow in internal node
 		//create new internal node
-		Node* newInternal = new Node;
+		Node<key_type,val_type>* newInternal = new Node<key_type,val_type>;
 		//create virtual Internal Node;
-		int virtualKey[MAX+1];
-		Node* virtualPtr[MAX+2];
+		key_type virtualKey[MAX+1];
+		Node<key_type,val_type>* virtualPtr[MAX+2];
 		for(int i = 0; i < MAX; i++)
 		{
 			virtualKey[i] = cursor->key[i];
@@ -278,7 +280,7 @@ void BPTree<key_type,val_type>::insertInternal(val_type x, Node<key_type,val_typ
 		if(cursor == root)
 		{
 			//if cursor is a root node, we create a new root
-			Node* newRoot = new Node;
+			Node<key_type,val_type>* newRoot = new Node<key_type,val_type>;
 			newRoot->key[0] = cursor->key[cursor->size];
 			newRoot->ptr[0] = cursor;
 			newRoot->ptr[1] = newInternal;
@@ -342,11 +344,15 @@ void BPTree<key_type,val_type>::display(Node<key_type,val_type>* cursor)
 		}
 	}
 }
-Node* BPTree::getRoot()
+
+template<typename key_type, typename val_type>
+Node<key_type,val_type>* BPTree<key_type,val_type>::getRoot()
 {
 	return root;
 }
-void BPTree::cleanUp(Node* cursor)
+
+template<typename key_type, typename val_type>
+void BPTree<key_type,val_type>::cleanUp(Node<key_type,val_type>* cursor)
 {
 	//clean up logic
 	if(cursor!=NULL)
@@ -367,7 +373,9 @@ void BPTree::cleanUp(Node* cursor)
 		delete cursor;
 	}
 }
-BPTree::~BPTree()
+
+template<typename key_type, typename val_type>
+BPTree<key_type,val_type>::~BPTree()
 {
 	//calling cleanUp routine
 	cleanUp(root);
@@ -378,7 +386,7 @@ BPTree::~BPTree()
 //to create a fresh tree, do not give any command line argument
 int main(int argc, char* argv[])
 {
-	BPTree bpt;//B+ tree object that carries out all the operations
+	BPTree<double,double> bpt;//B+ tree object that carries out all the operations
 	string command;
 	int x;
 	bool close = false;
