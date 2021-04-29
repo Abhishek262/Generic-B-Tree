@@ -3,6 +3,7 @@
 #include<sstream>
 #include<fstream>
 #include<climits>
+#include<typeinfo>
 using namespace std;
 int MAX; //size of each node
 
@@ -155,7 +156,7 @@ void BPTree<key_type,val_type>::insert(val_type x)
 			//create new leaf node
 			Node<key_type,val_type>* newLeaf = new Node<key_type,val_type>;
 			//create a virtual node and insert x into it
-			key_type virtualNode[MAX+1];
+			key_type virtualNode[MAX+2];
 			for(int i = 0; i < MAX; i++)
 			{
 				virtualNode[i] = cursor->key[i];
@@ -330,6 +331,10 @@ void BPTree<key_type,val_type>::display(Node<key_type,val_type>* cursor)
 	//depth first display
 	if(cursor!=NULL)
 	{
+		if(cursor->IS_LEAF == true)
+		{
+			cout << "L ";
+		}
 		for(int i = 0; i < cursor->size; i++)
 		{
 			cout<<cursor->key[i]<<" ";
