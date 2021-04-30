@@ -19,12 +19,31 @@ class Node
 {
 	bool IS_LEAF;
 	key_type *key;
-	val_type record;
+	val_type *record;
 	int size;
 	Node<key_type,val_type>** ptr;
 	friend class BPTree<key_type,val_type>;
 public:
 	Node();
+	Node(const Node& n);
+	Node& operator= (const Node& N){
+		if( this != &N)
+		{
+			delete[] key;	
+		}
+		key = new key_type[MAX];
+		for(int i = 0; i < size; i++){
+			key[i] = N.key[i];
+		}
+		int  i;
+		for(i = 0; i < size+1; i++){
+			ptr[i] = N.ptr[i];
+		}
+		if(i<MAX+1){
+			ptr[i] = NULL;
+		}
+	}
+	~Node();
 };
 
 template <typename key_type = int, typename val_type = int>	
@@ -36,6 +55,20 @@ class BPTree
 	Node<key_type,val_type>* findParent(Node<key_type,val_type>*,Node<key_type,val_type>*);
 public:
 	BPTree();
+	BPTree(const BPTree& T);
+	BPTree& operator= (const BPTree& T){
+		if(this != T){
+			cleanup(this.root);
+			if(T.root == NULL){
+				return NULL;
+			}
+			else{
+				root = copy_recursive(T.root);
+			}
+		}
+		return *this;
+	}
+	//move
 	void search(key_type);
 	void insert(val_type);
 	void remove(key_type);
@@ -43,6 +76,30 @@ public:
 	Node<key_type,val_type>* getRoot();
 	void cleanUp(Node<key_type,val_type>*);
 	~BPTree(); 
+	class iterator{
+		public:
+			//typedef typename BPTree::key_type key_type;
+			//typedef typename BPTree::value_type value_type;
+			typedef key_type& reference;
+			typedef key_type* pointer;
+			typedef std::forward_iterator_tag iterator_category ;
+			typedef ptrdiff_t difference_type;
+			//typedef iterator self;
+		private:
+			int curr_slot;
+			Node<key_type,val_type>* curr_leaf;
+			//maybe friend bptree
+		public:
+			iterator() : curr_leaf(nullptr), curr_slot(0)
+			{}
+
+			iterator(Node<key_type,val_type>* curr, int s) : curr_leaf(curr), curr_slot(s)
+			{}
+			iterator(const iterator& N) : curr_slot(N.curr_slot)
+			{
+				curr_leaf = N.curr_leaf;
+			}
+	};
 };
 template <typename key_type, typename val_type>	
 Node<key_type,val_type>::Node()
@@ -54,10 +111,54 @@ Node<key_type,val_type>::Node()
 }
 
 template <typename key_type, typename val_type>	
+Node<key_type,val_type>::Node(const Node& n)
+{
+	IS_LEAF = n.IS_LEAF;
+	size = n.size;
+	key = new key_type[MAX];
+	ptr = new Node<key_type,val_type>*[MAX+1];
+	for(int i = 0; i < size; i++){
+		key[i] = n.key[i];
+	}
+}
+
+template <typename key_type, typename val_type>	
+Node<key_type,val_type>::~Node()
+{
+	//dynamic memory allocation
+	delete[] key;
+	delete[] ptr;
+}
+//constructor
+template <typename key_type, typename val_type>	
 BPTree<key_type,val_type>::BPTree()
 {
 	root = NULL;
 }
+
+template <typename key_type, typename val_type>	
+BPTree<key_type,val_type>::BPTree(const BPTree& T){
+	if(T.root == NULL){
+		root = NULL;
+	}
+	else{
+		root = copy_recursive(T.root);
+	}
+}
+
+template <typename key_type, typename val_type>	
+Node<key_type,val_type> *copy_recursive(Node<key_type,val_type>* r){
+	if( r == NULL){
+		return NULL;
+	}
+	Node<key_type,val_type>* NewNode = r;
+
+	for( int i = 0; i <= r->size; i+1){
+		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
+	}
+	return NewNode;
+}
+
 template <typename key_type, typename val_type>	
 void BPTree<key_type,val_type>::search(key_type x)
 {
@@ -759,10 +860,6 @@ BPTree<key_type,val_type>::~BPTree()
 	//calling cleanUp routine
 	cleanUp(root);
 }
-
-
-
-
 
 //give command line argument to load a tree from log
 //to create a fresh tree, do not give any command line argument
