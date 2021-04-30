@@ -26,24 +26,7 @@ class Node
 public:
 	Node();
 	Node(const Node& n);
-	Node& operator= (const Node& N){
-		if( this != &N)
-		{
-			delete[] key;	
-		}
-		key = new key_type[MAX];
-		for(int i = 0; i < size; i++){
-			key[i] = N.key[i];
-		}
-		int  i;
-		for(i = 0; i < size+1; i++){
-			ptr[i] = N.ptr[i];
-		}
-		if(i<MAX+1){
-			ptr[i] = NULL;
-		}
-	}
-	~Node();
+	Node<key_type,val_type>& operator= (const Node& N);
 };
 
 template <typename key_type = int, typename val_type = int>	
@@ -53,6 +36,7 @@ class BPTree
 	void insertInternal(val_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
 	void removeInternal(key_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
 	Node<key_type,val_type>* findParent(Node<key_type,val_type>*,Node<key_type,val_type>*);
+
 public:
 	BPTree();
 	BPTree(const BPTree& T);
@@ -90,17 +74,114 @@ public:
 			Node<key_type,val_type>* curr_leaf;
 			//maybe friend bptree
 		public:
+			//default constructor
 			iterator() : curr_leaf(nullptr), curr_slot(0)
 			{}
-
-			iterator(Node<key_type,val_type>* curr, int s) : curr_leaf(curr), curr_slot(s)
+			// constructor with 2 args
+			iterator(Node<key_type,val_type> *leafNode,int s) : curr_leaf(leafNode),curr_slot(s)
 			{}
+			//copy constructor
 			iterator(const iterator& N) : curr_slot(N.curr_slot)
 			{
 				curr_leaf = N.curr_leaf;
 			}
+			//return key
+			const key_type& key() const {
+				return curr_leaf->key(curr_slot);
+			}
+
+        	iterator& operator++(){
+				if (curr_slot + 1 < curr_leaf->size) {
+					++curr_slot;
+				}
+				else if (curr_leaf->ptr[MAX+1] != NULL) {
+					curr_leaf = curr_leaf->ptr[MAX+1];
+					curr_slot = 0;
+				}
+				else {
+					// this is end()
+					curr_slot = curr_leaf->size;
+				}
+
+				return *this;
+			};
+
+			//postfix ++
+        	iterator& operator++(int){
+				iterator tmp = *this;   // copy ourselves
+
+				if (curr_slot + 1 < curr_leaf->size) {
+					++curr_slot;
+				}
+				else if (curr_leaf->ptr[MAX+1] != NULL) {
+					curr_leaf = curr_leaf->ptr[MAX+1];
+					curr_slot = 0;
+				}
+				else {
+					// this is end()
+					curr_slot = curr_leaf->size;
+				}
+
+				return tmp;
+			};
+
+			reference operator* () const {
+				return curr_leaf->ptr[curr_slot];
+			}	
+
+			pointer operator-> () const {
+				return &curr_leaf->ptr[curr_slot];
+			}
+
+			bool operator== (const iterator& x) const {
+				return (x.curr_leaf == curr_leaf) && (x.curr_slot == curr_slot);
+			}
+
+			//! Inequality of iterators.
+			bool operator!= (const iterator& x) const {
+				return (x.curr_leaf != curr_leaf) || (x.curr_slot != curr_slot);
+			}
 	};
+
+	Node<key_type,val_type>* getFirstNode(Node<key_type,val_type> *root){
+		if(root==NULL){
+			return NULL;
+		}
+		if(root->IS_LEAF){
+			return root;
+		}
+		
+		getFirstNode(root->ptr[0]);
+	}
+
+	Node<key_type,val_type>* getLastNode(Node<key_type,val_type> *root){
+		if(root==NULL){
+			return NULL;
+		}
+		if(root->IS_LEAF){
+			return root;
+		}
+		
+		getLastNode(root->ptr[root->size+1]);
+	}
+
+	iterator begin() {
+        return iterator(getFirstNode(root), 0);
+    }
+
+	iterator end() {
+		int slot;
+		Node<key_type,val_type> *last = getLastNode(root);
+		if(last==NULL){
+			slot = 0;
+		}
+		else{
+			slot = last->size;
+		}
+        return iterator(last, slot);
+    }
 };
+
 template <typename key_type, typename val_type>	
 Node<key_type,val_type>::Node()
 {
@@ -123,12 +204,24 @@ Node<key_type,val_type>::Node(const Node& n)
 }
 
 template <typename key_type, typename val_type>	
-Node<key_type,val_type>::~Node()
-{
-	//dynamic memory allocation
-	delete[] key;
-	delete[] ptr;
+Node<key_type,val_type>& Node<key_type,val_type>::operator=(const Node& N){
+	if( this != &N)
+	{
+		delete[] key;	
+	}
+	key = new key_type[MAX];
+	for(int i = 0; i < size; i++){
+		key[i] = N.key[i];
+	}
+	int  i;
+	for(i = 0; i < size+1; i++){
+		ptr[i] = N.ptr[i];
+	}
+	if(i<MAX+1){
+		ptr[i] = NULL;
+	}
 }
+
 //constructor
 template <typename key_type, typename val_type>	
 BPTree<key_type,val_type>::BPTree()
