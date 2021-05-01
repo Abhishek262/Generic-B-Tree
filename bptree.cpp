@@ -5,11 +5,13 @@
 #include<climits>
 #include<typeinfo>
 #include<cmath>
+#include<vector>
+#include<bits/stdc++.h>
 
 using namespace std;
-int MAX; //size of each node
+int def_max = 3; //size of each node
 
-//find, copy and replace STL functions : iterator
+//find, copy , upper bound, lower bound,replace STL functions : iterator
 //make data stored generic and its pointers
 template<typename k, typename v>
 class BPTree;
@@ -21,10 +23,12 @@ class Node
 	key_type *key;
 	val_type *record;
 	int size;
+	int MAX;
 	Node<key_type,val_type>** ptr;
 	friend class BPTree<key_type,val_type>;
 public:
 	Node();
+	Node(int MAX);
 	Node(const Node& n);
 	Node<key_type,val_type>& operator= (const Node& N);
 };
@@ -33,12 +37,15 @@ template <typename key_type = int, typename val_type = int>
 class BPTree
 {
 	Node<key_type,val_type> *root;
+	int MAX;
 	void insertInternal(val_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
 	void removeInternal(key_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
 	Node<key_type,val_type>* findParent(Node<key_type,val_type>*,Node<key_type,val_type>*);
 
 public:
+
 	BPTree();
+	BPTree(int MAX);
 	BPTree(const BPTree& T);
 	BPTree& operator= (const BPTree& T){
 		if(this != T){
@@ -57,9 +64,19 @@ public:
 	void insert(val_type);
 	void remove(key_type);
 	void display(Node<key_type,val_type>*);
+	void display_tree();
 	Node<key_type,val_type>* getRoot();
 	void cleanUp(Node<key_type,val_type>*);
 	~BPTree(); 
+
+	//STL defs
+	using key_type  = key_type;
+	using value_type = key_type;
+	using reference = key_type&;
+	using pointer  = key_type*;
+	// using iterator = bp
+
+
 	class iterator{
 		public:
 			//typedef typename BPTree::key_type key_type;
@@ -186,6 +203,17 @@ template <typename key_type, typename val_type>
 Node<key_type,val_type>::Node()
 {
 	//dynamic memory allocation
+	MAX = def_max;
+	key = new key_type[MAX];
+	ptr = new Node<key_type,val_type>*[MAX+1];
+	IS_LEAF = false;
+}
+
+template <typename key_type, typename val_type>	
+Node<key_type,val_type>::Node(int MAX)
+{
+	//dynamic memory allocation
+	MAX = MAX;
 	key = new key_type[MAX];
 	ptr = new Node<key_type,val_type>*[MAX+1];
 	IS_LEAF = false;
@@ -194,6 +222,7 @@ Node<key_type,val_type>::Node()
 template <typename key_type, typename val_type>	
 Node<key_type,val_type>::Node(const Node& n)
 {
+	MAX = n.MAX;
 	IS_LEAF = n.IS_LEAF;
 	size = n.size;
 	key = new key_type[MAX];
@@ -209,6 +238,7 @@ Node<key_type,val_type>& Node<key_type,val_type>::operator=(const Node& N){
 	{
 		delete[] key;	
 	}
+	MAX = N.MAX;
 	key = new key_type[MAX];
 	for(int i = 0; i < size; i++){
 		key[i] = N.key[i];
@@ -221,12 +251,22 @@ Node<key_type,val_type>& Node<key_type,val_type>::operator=(const Node& N){
 		ptr[i] = NULL;
 	}
 }
-
-//constructor
+//default constructor
 template <typename key_type, typename val_type>	
 BPTree<key_type,val_type>::BPTree()
 {
 	root = NULL;
+	MAX = def_max;
+
+}
+
+//constructor
+template <typename key_type, typename val_type>	
+BPTree<key_type,val_type>::BPTree(int n)
+{
+	root = NULL;
+	MAX = n;
+
 }
 
 template <typename key_type, typename val_type>	
@@ -235,16 +275,18 @@ BPTree<key_type,val_type>::BPTree(const BPTree& T){
 		root = NULL;
 	}
 	else{
+		MAX = T.MAX;
 		root = copy_recursive(T.root);
 	}
 }
 
 template <typename key_type, typename val_type>	
-Node<key_type,val_type> *copy_recursive(Node<key_type,val_type>* r){
+Node<key_type,val_type> *copy_recursive(Node<key_type,val_type> *r){
 	if( r == NULL){
 		return NULL;
 	}
-	Node<key_type,val_type>* NewNode = r;
+
+	Node<key_type,val_type> *NewNode = new Node<key_type,val_type>(*r);
 
 	for( int i = 0; i <= r->size; i+1){
 		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
@@ -919,6 +961,12 @@ void BPTree<key_type,val_type>::display(Node<key_type,val_type>* cursor)
 }
 
 template<typename key_type, typename val_type>
+void BPTree<key_type,val_type>::display_tree(){
+	display(getRoot());
+}
+
+
+template<typename key_type, typename val_type>
 Node<key_type,val_type>* BPTree<key_type,val_type>::getRoot()
 {
 	return root;
@@ -954,126 +1002,150 @@ BPTree<key_type,val_type>::~BPTree()
 	cleanUp(root);
 }
 
-//give command line argument to load a tree from log
-//to create a fresh tree, do not give any command line argument
-int main(int argc, char* argv[])
-{
-	BPTree<string,string> bpt;//B+ tree object that carries out all the operations
-	string command;
-	string x;
-	bool close = false;
-	string logBuffer;//used to save into log
-	ifstream fin;
-	ofstream fout;
-	//create tree from log file from command line input
-	if(argc > 1)
-	{
-		fin.open(argv[1]);//open file
-		if(!fin.is_open())
-		{
-			cout<<"File not found\n";
-			return 0;
-		}
-		int i = 1;
-		getline(fin, logBuffer, '\0');//copy log from file to logBuffer for saving purpose
-		fin.close();
-		fin.open(argv[1]);//reopening file
-		getline(fin,command);
-		stringstream max(command);//first line of log contains the max degree
-		max>>MAX;
-		while(getline(fin,command))//iterating over every line ie command
-		{
-			if(!command.substr(0,6).compare("insert"))
-			{
-				stringstream argument(command.substr(7));
-				argument>>x;
-				bpt.insert(x);
-			}
-			else if(!command.substr(0,6).compare("delete"))
-			{
-				stringstream argument(command.substr(7));
-				argument>>x;
-				bpt.remove(x);
-			}
-			else
-			{
-				cout<<"Unknown command: "<<command<<" at line #"<<i<<"\n";
-				return 0;
-			}
-			i++;
-		}
-		cout<<"Tree loaded successfully from: \""<<argv[1]<<"\"\n";
-		fin.close();
-	}
-	else//create fresh tree
-	{
-		cout<<"Enter the max degree\n";
-		cin>>command;
-		stringstream max(command);
-		max>>MAX;
-		logBuffer.append(command);
-		logBuffer.append("\n");
-		cin.clear();
-		cin.ignore(1);
-	}
-	//command line menu
-	cout<<"Commands:\nsearch <value> to search\n";
-	cout<<"insert <value> to insert\n";
-	cout<<"delete <value> to delete\n";
-	cout<<"display to display\n";
-	cout<<"save to save log\n";
-	cout<<"exit to exit\n";
-	do
-	{
-		cout<<"Enter command: ";
-		getline(cin,command);
-		if(!command.substr(0,6).compare("search"))
-		{
-			stringstream argument(command.substr(7));
-			argument>>x;
-			bpt.search(x);
-		}
-		else if(!command.substr(0,6).compare("insert"))
-		{
-			stringstream argument(command.substr(7));
-			argument>>x;
-			bpt.insert(x);
-			logBuffer.append(command);
-			logBuffer.append("\n");
-		}
-		else if(!command.substr(0,6).compare("delete"))
-		{
-			stringstream argument(command.substr(7));
-			argument>>x;
-			bpt.remove(x);
-			logBuffer.append(command);
-			logBuffer.append("\n");
-		}
-		else if(!command.compare("display"))
-		{
-			bpt.display(bpt.getRoot());
-		}
-		else if(!command.compare("save"))
-		{
-			cout<<"Enter file name: ";
-			string filename;
-			cin>>filename;
-			fout.open(filename);
-			fout<<logBuffer;
-			fout.close();
-			cout<<"Saved successfully into file: \""<<filename<<"\"\n";
-			cin.clear();
-			cin.ignore(1);
-		}
-		else if(!command.compare("exit"))
-		{
-			close = true;
-		}
-		else
-		{
-			cout<<"Invalid command\n";
-		}
-	}while(!close);
-	return 0;
-}
+// give command line argument to load a tree from log
+// to create a fresh tree, do not give any command line argument
 
+// int main(int argc, char* argv[])
+// {
+// 	string command;
+// 	string x;
+// 	bool close = false;
+// 	string logBuffer;//used to save into log
+// 	ifstream fin;
+// 	ofstream fout;
+// 	//create tree from log file from command line input
+// 	// if(argc > 1)
+// 	// {
+// 	// 	fin.open(argv[1]);//open file
+// 	// 	if(!fin.is_open())
+// 	// 	{
+// 	// 		cout<<"File not found\n";
+// 	// 		return 0;
+// 	// 	}
+// 	// 	int i = 1;
+// 	// 	getline(fin, logBuffer, '\0');//copy log from file to logBuffer for saving purpose
+// 	// 	fin.close();
+// 	// 	fin.open(argv[1]);//reopening file
+// 	// 	getline(fin,command);
+// 	// 	stringstream max(command);//first line of log contains the max degree
+// 	// 	while(getline(fin,command))//iterating over every line ie command
+// 	// 	{
+// 	// 		if(!command.substr(0,6).compare("insert"))
+// 	// 		{
+// 	// 			stringstream argument(command.substr(7));
+// 	// 			argument>>x;
+// 	// 			bpt.insert(x);
+// 	// 		}
+// 	// 		else if(!command.substr(0,6).compare("delete"))
+// 	// 		{
+// 	// 			stringstream argument(command.substr(7));
+// 	// 			argument>>x;
+// 	// 			bpt.remove(x);
+// 	// 		}
+// 	// 		else
+// 	// 		{
+// 	// 			cout<<"Unknown command: "<<command<<" at line #"<<i<<"\n";
+// 	// 			return 0;
+// 	// 		}
+// 	// 		i++;
+// 	// 	}
+// 	// 	cout<<"Tree loaded successfully from: \""<<argv[1]<<"\"\n";
+// 	// 	fin.close();
+// 	// }
+
+
+// 	// else//create fresh tree
+// 	// {
+// 	cout<<"Enter the max degree\n";
+// 	cin>>command;
+// 	stringstream max(command);
+// 	int MAX;
+// 	max>>MAX;
+// 	BPTree<string,string> bpt(MAX);//B+ tree object that carries out all the operations
+
+// 	logBuffer.append(command);
+// 	logBuffer.append("\n");
+// 	cin.clear();
+// 	cin.ignore(1);
+// 	// }
+
+// 	// command line menu
+// 	cout<<"Commands:\nsearch <value> to search\n";
+// 	cout<<"insert <value> to insert\n";
+// 	cout<<"delete <value> to delete\n";
+// 	cout<<"display to display\n";
+// 	cout<<"save to save log\n";
+// 	cout<<"exit to exit\n";
+// 	do
+// 	{
+// 		cout<<"Enter command: ";
+// 		getline(cin,command);
+// 		if(!command.substr(0,6).compare("search"))
+// 		{
+// 			stringstream argument(command.substr(7));
+// 			argument>>x;
+// 			bpt.search(x);
+// 		}
+// 		else if(!command.substr(0,6).compare("insert"))
+// 		{
+// 			stringstream argument(command.substr(7));
+// 			argument>>x;
+// 			bpt.insert(x);
+// 			logBuffer.append(command);
+// 			logBuffer.append("\n");
+// 		}
+// 		else if(!command.substr(0,6).compare("delete"))
+// 		{
+// 			stringstream argument(command.substr(7));
+// 			argument>>x;
+// 			bpt.remove(x);
+// 			logBuffer.append(command);
+// 			logBuffer.append("\n");
+// 		}
+// 		else if(!command.compare("display"))
+// 		{
+// 			bpt.display(bpt.getRoot());
+// 		}
+// 		else if(!command.compare("save"))
+// 		{
+// 			cout<<"Enter file name: ";
+// 			string filename;
+// 			cin>>filename;
+// 			fout.open(filename);
+// 			fout<<logBuffer;
+// 			fout.close();
+// 			cout<<"Saved successfully into file: \""<<filename<<"\"\n";
+// 			cin.clear();
+// 			cin.ignore(1);
+// 		}
+// 		else if(!command.compare("exit"))
+// 		{
+// 			close = true;
+// 		}
+// 		else
+// 		{
+// 			cout<<"Invalid command\n";
+// 		}
+// 	}while(!close);
+// 	return 0;
+// }
+
+int main(){
+	BPTree<string,string> bpt(3);//B+ tree object that carries out all the operations
+    bpt.insert("1");
+    bpt.insert("2");
+    bpt.insert("3");
+    bpt.insert("4");
+    bpt.insert("5");
+    bpt.insert("6");
+
+    bpt.display_tree();
+	// vector<int> v= {1,2,3};
+	// vector<int>::iterator it;
+	// it = find(v.begin(),v.end(),1);
+	// cout << *it<< endl;
+
+	BPTree<string,string>::iterator it_b;
+	it_b =find(bpt.begin(),bpt.end(),"1");
+
+}
