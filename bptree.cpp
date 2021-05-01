@@ -126,8 +126,9 @@ public:
 				if (curr_slot + 1 < curr_leaf->size) {
 					++curr_slot;
 				}
-				else if (curr_leaf->ptr[curr_leaf->MAX+1] != NULL) {
-					curr_leaf = curr_leaf->ptr[curr_leaf->MAX+1];
+				else if (curr_leaf->ptr[curr_leaf->size] != NULL) {
+					//cout << "NULL";
+					curr_leaf = curr_leaf->ptr[curr_leaf->size];
 					curr_slot = 0;
 				}
 				else {
@@ -139,25 +140,26 @@ public:
 			};
 
 			//postfix ++
-        	iterator& operator++(int){
-				iterator tmp = *this;   // copy ourselves
+        	// iterator& operator++(int){
+			// 	iterator tmp = *this;   // copy ourselves
 
-				if (curr_slot + 1 < curr_leaf->size) {
-					++curr_slot;
-				}
-				else if (curr_leaf->ptr[curr_leaf->MAX+1] != NULL) {
-					curr_leaf = curr_leaf->ptr[curr_leaf->MAX+1];
-					curr_slot = 0;
-				}
-				else {
-					// this is end()
-					curr_slot = curr_leaf->size;
-				}
+			// 	if (curr_slot + 1 < curr_leaf->size) {
+			// 		++curr_slot;
+			// 	}
+			// 	else if (curr_leaf->ptr[curr_leaf->MAX+1] != NULL) {
+			// 		curr_leaf = curr_leaf->ptr[curr_leaf->MAX+1];
+			// 		curr_slot = 0;
+			// 	}
+			// 	else {
+			// 		// this is end()
+			// 		curr_slot = curr_leaf->size;
+			// 	}
 
-				return tmp;
-			};
+			// 	return tmp;
+			// };
 
 			reference operator* () const {
+				//cout << "VAL" << curr_leaf->key[curr_slot] <<"\t"<< curr_slot<< endl;
 				return curr_leaf->key[curr_slot];
 			}	
 
@@ -184,7 +186,7 @@ public:
 			return root;
 		}
 		
-		getFirstNode(root->ptr[0]);
+		return getFirstNode(root->ptr[0]);
 	}
 
 	Node<key_type,val_type>* getLastNode(Node<key_type,val_type> *root){
@@ -195,7 +197,7 @@ public:
 			return root;
 		}
 		
-		getLastNode(root->ptr[root->size+1]);
+		return getLastNode(root->ptr[root->size]);
 	}
 
 	iterator begin() {
@@ -368,7 +370,7 @@ void BPTree<key_type,val_type>::insert(val_type x)
 	{
 		Node<key_type,val_type>* cursor = root;
 		Node<key_type,val_type>* parent;
-		//in the following while loop, cursor will travel to the leaf node possibly consisting the key
+		//in the following while loop, cursor will travel to OverfloOverflow in leaf node!w in leaf node!the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
 		{
 			parent = cursor;
@@ -1149,22 +1151,27 @@ BPTree<key_type,val_type>::~BPTree()
 int main(){
 	BPTree<string,string> bpt(3);//B+ tree object that carries out all the operations
     bpt.insert("1");
-    bpt.insert("2");
     bpt.insert("3");
+    bpt.insert("2");
     bpt.insert("4");
+	BPTree<string,string>::iterator it;
+	bpt.display_tree();
     bpt.insert("5");
     bpt.insert("6");
 
     bpt.display_tree();
 	// vector<int> v= {1,2,3};
 	// vector<int>::iterator it;
-	// it = find(v.begin(),v.end(),1);
-	// cout << *it<< endl;
+	//it = find(v.begin(),v.end(),1);
+	//cout << *it<< endl;
 
 	BPTree<string,string>::iterator it_b;
 
-	it_b =find(bpt.begin(),bpt.end(),"4");
+	it_b =find(bpt.begin(),bpt.end(),"8");
+	// cout << *it_b;
+	// ++it_b;
+	// cout << *it_b;
 	if (it_b != bpt.end()){
-		cout << *it_b << endl;
+		cout << *it_b<< endl;
 	}
 }
