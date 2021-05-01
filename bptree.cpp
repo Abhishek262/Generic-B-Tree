@@ -126,8 +126,8 @@ public:
 				if (curr_slot + 1 < curr_leaf->size) {
 					++curr_slot;
 				}
-				else if (curr_leaf->ptr[MAX+1] != NULL) {
-					curr_leaf = curr_leaf->ptr[MAX+1];
+				else if (curr_leaf->ptr[curr_leaf->MAX+1] != NULL) {
+					curr_leaf = curr_leaf->ptr[curr_leaf->MAX+1];
 					curr_slot = 0;
 				}
 				else {
@@ -145,8 +145,8 @@ public:
 				if (curr_slot + 1 < curr_leaf->size) {
 					++curr_slot;
 				}
-				else if (curr_leaf->ptr[MAX+1] != NULL) {
-					curr_leaf = curr_leaf->ptr[MAX+1];
+				else if (curr_leaf->ptr[curr_leaf->MAX+1] != NULL) {
+					curr_leaf = curr_leaf->ptr[curr_leaf->MAX+1];
 					curr_slot = 0;
 				}
 				else {
@@ -158,11 +158,11 @@ public:
 			};
 
 			reference operator* () const {
-				return curr_leaf->ptr[curr_slot];
+				return curr_leaf->key[curr_slot];
 			}	
 
 			pointer operator-> () const {
-				return &curr_leaf->ptr[curr_slot];
+				return &curr_leaf->key[curr_slot];
 			}
 
 			bool operator== (const iterator& x) const {
@@ -1162,6 +1162,9 @@ int main(){
 	// cout << *it<< endl;
 
 	BPTree<string,string>::iterator it_b;
-	it_b =find(bpt.begin(),bpt.end(),"1");
 
+	it_b =find(bpt.begin(),bpt.end(),"4");
+	if (it_b != bpt.end()){
+		cout << *it_b << endl;
+	}
 }
