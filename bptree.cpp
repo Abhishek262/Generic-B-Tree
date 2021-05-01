@@ -11,6 +11,7 @@
 using namespace std;
 int def_max = 3; //size of each node
 
+
 //find, copy , upper bound, lower bound,replace STL functions : iterator
 //make data stored generic and its pointers
 template<typename k, typename v>
@@ -26,6 +27,8 @@ class Node
 	int MAX;
 	Node<key_type,val_type>** ptr;
 	friend class BPTree<key_type,val_type>;
+	friend class BPTree<key_type,val_type>::iterator;
+
 public:
 	Node();
 	Node(int MAX);
@@ -70,11 +73,11 @@ public:
 	~BPTree(); 
 
 	//STL defs
-	using key_type  = key_type;
-	using value_type = key_type;
-	using reference = key_type&;
-	using pointer  = key_type*;
-	// using iterator = bp
+	// using key_type  = key_type;
+	// using value_type = key_type;
+	// using reference = key_type&;
+	// using pointer  = key_type*;
+	// using iterator = BPTree<key_type,val_type>::iterator
 
 
 	class iterator{
@@ -83,9 +86,21 @@ public:
 			//typedef typename BPTree::value_type value_type;
 			typedef key_type& reference;
 			typedef key_type* pointer;
-			typedef std::forward_iterator_tag iterator_category ;
+			typedef forward_iterator_tag iterator_category ;
 			typedef ptrdiff_t difference_type;
+			typedef key_type value_type;
+
 			//typedef iterator self;
+			// namespace std{
+			// struct iterator_traits<iterator> {
+			// 	typedef ptrdiff_t          difference_type;
+			// 	typedef key_type               value_type;
+			// 	typedef key_type*              pointer;
+			// 	typedef key_type&              reference;
+			// 	typedef forward_iterator_tag iterator_category;
+			// };
+			// }
+
 		private:
 			int curr_slot;
 			Node<key_type,val_type>* curr_leaf;
@@ -159,6 +174,7 @@ public:
 				return (x.curr_leaf != curr_leaf) || (x.curr_slot != curr_slot);
 			}
 	};
+
 
 	Node<key_type,val_type>* getFirstNode(Node<key_type,val_type> *root){
 		if(root==NULL){
