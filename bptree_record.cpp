@@ -666,6 +666,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		for(int i = pos; i < cursor->size; i++)
 		{
 			cursor->key[i] = cursor->key[i+1];
+			cursor->record[i] = cursor->record[i+1];
+
 		}
 		cursor->size--;
 		if(cursor == root)//if it is root node, then make all pointers NULL
@@ -679,6 +681,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			{
 				cout<<"Tree died\n";
 				delete[] cursor->key;
+				delete[] cursor->record;
 				delete[] cursor->ptr;
 				delete cursor;
 				root = NULL;
@@ -706,6 +709,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 				for(int i = cursor->size; i > 0; i--)
 				{
 					cursor->key[i] = cursor->key[i-1];
+					cursor->record[i] = cursor->record[i-1];
+
 				}
 				//shift pointer to next leaf
 				cursor->size++;
@@ -713,12 +718,16 @@ void BPTree<k_type,val_type>::remove(k_type x)
 				cursor->ptr[cursor->size-1] = NULL;
 				//transfer
 				cursor->key[0] = leftNode->key[leftNode->size-1];
+				cursor->record[0] = leftNode->key[leftNode->size-1];
+
 				//shift pointer of leftsibling
 				leftNode->size--;
 				leftNode->ptr[leftNode->size] = cursor;
 				leftNode->ptr[leftNode->size+1] = NULL;
 				//update parent
 				parent->key[leftSibling] = cursor->key[0];
+				parent->record[leftSibling] = cursor->record[0];
+
 				cout<<"Transferred "<<cursor->key[0]<<" from left sibling of leaf node\n";
 				return;
 			}
@@ -743,9 +752,13 @@ void BPTree<k_type,val_type>::remove(k_type x)
 				for(int i = 0; i < rightNode->size; i++)
 				{
 					rightNode->key[i] = rightNode->key[i+1];
+					rightNode->record[i] = rightNode->record[i+1];
+
 				}
 				//update parent
 				parent->key[rightSibling-1] = rightNode->key[0];
+				parent->record[rightSibling-1] = rightNode->record[0];
+
 				cout<<"Transferred "<<cursor->key[cursor->size-1]<<" from right sibling of leaf node\n";
 				return;
 			}
@@ -758,6 +771,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			for(int i = leftNode->size, j = 0; j < cursor->size; i++, j++)
 			{
 				leftNode->key[i] = cursor->key[j];
+				leftNode->record[i] = cursor->record[j];
+
 			}
 			leftNode->ptr[leftNode->size] = NULL;
 			leftNode->size += cursor->size;
@@ -765,6 +780,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			cout<<"Merging two leaf nodes\n";
 			removeInternal(parent->key[leftSibling],parent,cursor);// delete parent node key
 			delete[] cursor->key;
+			delete[] cursor->record;
 			delete[] cursor->ptr;
 			delete cursor;
 		}
@@ -775,6 +791,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			for(int i = cursor->size, j = 0; j < rightNode->size; i++, j++)
 			{
 				cursor->key[i] = rightNode->key[j];
+				cursor->record[i] = rightNode->record[j];
+            
 			}
 			cursor->ptr[cursor->size] = NULL;
 			cursor->size += rightNode->size;
@@ -782,6 +800,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			cout<<"Merging two leaf nodes\n";
 			removeInternal(parent->key[rightSibling-1],parent,rightNode);// delete parent node key
 			delete[] rightNode->key;
+			delete[] rightNode->record;
 			delete[] rightNode->ptr;
 			delete rightNode;
 		}
@@ -800,10 +819,12 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 			if(cursor->ptr[1] == child)
 			{
 				delete[] child->key;
+				delete[] child->record;
 				delete[] child->ptr;
 				delete child;
 				root = cursor->ptr[0];
 				delete[] cursor->key;
+				delete[] cursor->record;
 				delete[] cursor->ptr;
 				delete cursor;
 				cout<<"Changed root node\n";
@@ -812,10 +833,12 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 			else if(cursor->ptr[0] == child)
 			{
 				delete[] child->key;
+				delete[] child->record;
 				delete[] child->ptr;
 				delete child;
 				root = cursor->ptr[1];
 				delete[] cursor->key;
+				delete[] cursor->record;
 				delete[] cursor->ptr;
 				delete cursor;
 				cout<<"Changed root node\n";
@@ -834,6 +857,8 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	for(int i = pos; i < cursor->size; i++)
 	{
 		cursor->key[i] = cursor->key[i+1];
+		cursor->record[i] = cursor->record[i+1];
+
 	}
 	//now deleting the pointer child
 	for(pos = 0; pos < cursor->size+1; pos++)
@@ -879,10 +904,16 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 			for(int i = cursor->size; i > 0; i--)
 			{
 				cursor->key[i] = cursor->key[i-1];
+				cursor->record[i] = cursor->record[i-1];
+
 			}
 			//transfer key from left sibling through parent
 			cursor->key[0] = parent->key[leftSibling];
+			cursor->record[0] = parent->record[leftSibling];
+
 			parent->key[leftSibling] = leftNode->key[leftNode->size-1];
+			parent->record[leftSibling] = leftNode->record[leftNode->size-1];
+
 			//transfer last pointer from leftnode to cursor
 			//make space for transfer of ptr
 			for (int i = cursor->size+1; i > 0; i--)
@@ -905,10 +936,17 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 		{
 			//transfer key from right sibling through parent
 			cursor->key[cursor->size] = parent->key[pos];
+			cursor->record[cursor->size] = parent->record[pos];
+
+
 			parent->key[pos] = rightNode->key[0];
+			parent->record[pos] = rightNode->record[0];
+
 			for (int i = 0; i < rightNode->size -1; i++)
 			{
 				rightNode->key[i] = rightNode->key[i+1];
+				rightNode->record[i] = rightNode->record[i+1];
+            
 			}
 			//transfer first pointer from rightnode to cursor
 			//transfer ptr
@@ -929,9 +967,13 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 		//leftnode + parent key + cursor
 		Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
 		leftNode->key[leftNode->size] = parent->key[leftSibling];
+		leftNode->record[leftNode->size] = parent->record[leftSibling];
+    
 		for(int i = leftNode->size+1, j = 0; j < cursor->size; j++)
 		{
 			leftNode->key[i] = cursor->key[j];
+			leftNode->record[i] = cursor->record[j];
+
 		}
 		for(int i = leftNode->size+1, j = 0; j < cursor->size+1; j++)
 		{
@@ -953,6 +995,8 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 		for(int i = cursor->size+1, j = 0; j < rightNode->size; j++)
 		{
 			cursor->key[i] = rightNode->key[j];
+			cursor->record[i] = rightNode->record[j];
+
 		}
 		for(int i = cursor->size+1, j = 0; j < rightNode->size+1; j++)
 		{
@@ -1059,6 +1103,8 @@ template<typename k_type, typename val_type>
 BPTree<k_type,val_type>::~BPTree()
 {
 	//calling cleanUp routine
+    // cout << "\nFreeing all memory\n";
+
 	cleanUp(root);
 }
 
@@ -1201,6 +1247,7 @@ int main(){
     bpt.insert("4","d");
     bpt.insert("5","e");
     bpt.insert("6","f");
+    bpt.remove("5");
 
     bpt.display_tree();
 
