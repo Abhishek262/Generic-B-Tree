@@ -68,6 +68,7 @@ public:
 	void remove(k_type);
 	void display(Node<k_type,val_type>*);
 	void display_tree();
+	val_type& operator[] (k_type key);
 	Node<k_type,val_type>* getRoot();
 	void cleanUp(Node<k_type,val_type>*);
 	~BPTree(); 
@@ -102,11 +103,15 @@ public:
 			}
 			//return key
 			const k_type& key() const {
-				return curr_leaf->key(curr_slot);
+				return curr_leaf->key[curr_slot];
 			}
 
 			const val_type& value() const {
-				return curr_leaf->record(curr_slot);
+				return curr_leaf->record[curr_slot];
+			}
+
+			val_type* valuep() const {
+				return &curr_leaf->record[curr_slot];
 			}
 
         	iterator& operator++(){
@@ -313,6 +318,24 @@ Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r){
 	}
 	return NewNode;
 }
+
+template <typename k_type, typename val_type>	
+val_type& BPTree<k_type,val_type>::operator[] (k_type key){
+
+	iterator it_b;
+	it_b =find(begin(),end(),key);
+	if (it_b != end()){
+		// cout << it_b.value()<< endl;
+		// val_type x;
+		// x = it_b.value();
+		val_type *x = it_b.valuep();
+		return *x;
+	}
+	else{
+		throw "out_of_range";
+	}
+}
+
 
 template <typename k_type, typename val_type>	
 void BPTree<k_type,val_type>::search(k_type x)
@@ -1244,12 +1267,14 @@ int main(){
     bpt.insert("1","amk");
     bpt.insert("2","b");
     bpt.insert("3","c");
-    bpt.insert("4","d");
+    bpt.insert("4a","d");
     bpt.insert("5","e");
     bpt.insert("6","f");
-    bpt.remove("5");
-
-    bpt.display_tree();
+    // bpt.remove("5");
+	
+	bpt["5"] = "sg";
+	cout <<endl<< bpt["5"]<<endl;
+    // bpt.display_tree();
 
 	// bpt2.insert("1");
     // bpt2.insert("3");
@@ -1266,14 +1291,14 @@ int main(){
 
 	BPTree<string,string>::iterator it_b;
 
-	// it_b =find(bpt.begin(),bpt.end(),"4");
-	// copy(bpt.begin(),bpt.end(),bpt2.begin());
-	// sort(bpt.begin(),bpt.end());
-	// it_b = lower_bound(bpt.begin(),bpt.end(),4);
-	// cout << *it_b;
-	// cout << *it_b;
-	// ++it_b;
-	// cout << *it_b;
+	// it_b =find(bpt.begin(),bpt.end(),"e");
+	// // copy(bpt.begin(),bpt.end(),bpt2.begin());
+	// // sort(bpt.begin(),bpt.end());
+	// // it_b = lower_bound(bpt.begin(),bpt.end(),4);
+	// // cout << *it_b;
+	// // cout << *it_b;
+	// // ++it_b;
+	// // cout << *it_b;
 	// if (it_b != bpt.end()){
 	// 	cout << *it_b<< endl;
 	// }
