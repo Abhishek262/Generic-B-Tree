@@ -17,33 +17,33 @@ int def_max = 3; //size of each node
 template<typename k, typename v>
 class BPTree;
 
-template <typename key_type, typename val_type>
+template <typename k_type, typename val_type>
 class Node
 {
 	bool IS_LEAF;
-	key_type *key;
+	k_type *key;
 	val_type *record;
 	int size;
 	int MAX;
-	Node<key_type,val_type>** ptr;
-	friend class BPTree<key_type,val_type>;
-	friend class BPTree<key_type,val_type>::iterator;
+	Node<k_type,val_type>** ptr;
+	friend class BPTree<k_type,val_type>;
+	friend class BPTree<k_type,val_type>::iterator;
 
 public:
 	Node();
 	Node(int MAX);
 	Node(const Node& n);
-	Node<key_type,val_type>& operator= (const Node& N);
+	Node<k_type,val_type>& operator= (const Node& N);
 };
 
-template <typename key_type = int, typename val_type = int>	
+template <typename k_type = int, typename val_type = int>	
 class BPTree
 {
-	Node<key_type,val_type> *root;
+	Node<k_type,val_type> *root;
 	int MAX;
-	void insertInternal(key_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
-	void removeInternal(key_type,Node<key_type,val_type>*,Node<key_type,val_type>*);
-	Node<key_type,val_type>* findParent(Node<key_type,val_type>*,Node<key_type,val_type>*);
+	void insertInternal(k_type,val_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
+	void removeInternal(k_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
+	Node<k_type,val_type>* findParent(Node<k_type,val_type>*,Node<k_type,val_type>*);
 
 public:
 
@@ -63,44 +63,37 @@ public:
 		return *this;
 	}
 	//move
-	void search(key_type);
-	void insert(key_type);
-	void remove(key_type);
-	void display(Node<key_type,val_type>*);
+	void search(k_type);
+	void insert(k_type,val_type);
+	void remove(k_type);
+	void display(Node<k_type,val_type>*);
 	void display_tree();
-	Node<key_type,val_type>* getRoot();
-	void cleanUp(Node<key_type,val_type>*);
+	Node<k_type,val_type>* getRoot();
+	void cleanUp(Node<k_type,val_type>*);
 	~BPTree(); 
-
-	//STL defs
-	// using key_type  = key_type;
-	// using value_type = key_type;
-	// using reference = key_type&;
-	// using pointer  = key_type*;
-	// using iterator = BPTree<key_type,val_type>::iterator
 
 
 	class iterator{
 		public:
-			//typedef typename BPTree::key_type key_type;
+			//typedef typename BPTree::k_type k_type;
 			//typedef typename BPTree::value_type value_type;
-			typedef key_type& reference;
-			typedef key_type* pointer;
+			typedef k_type& reference;
+			typedef k_type* pointer;
 			typedef forward_iterator_tag iterator_category ;
 			typedef ptrdiff_t difference_type;
-			typedef key_type value_type;
-
+			typedef val_type value_type;
+			typedef k_type key_type;
 
 		private:
 			int curr_slot;
-			Node<key_type,val_type>* curr_leaf;
+			Node<k_type,val_type>* curr_leaf;
 			//maybe friend bptree
 		public:
 			//default constructor
 			iterator() : curr_leaf(nullptr), curr_slot(0)
 			{}
 			// constructor with 2 args
-			iterator(Node<key_type,val_type> *leafNode,int s) : curr_leaf(leafNode),curr_slot(s)
+			iterator(Node<k_type,val_type> *leafNode,int s) : curr_leaf(leafNode),curr_slot(s)
 			{}
 			//copy constructor
 			iterator(const iterator& N) : curr_slot(N.curr_slot)
@@ -108,8 +101,12 @@ public:
 				curr_leaf = N.curr_leaf;
 			}
 			//return key
-			const key_type& key() const {
+			const k_type& key() const {
 				return curr_leaf->key(curr_slot);
+			}
+
+			const val_type& value() const {
+				return curr_leaf->record(curr_slot);
 			}
 
         	iterator& operator++(){
@@ -158,6 +155,7 @@ public:
 				return &curr_leaf->key[curr_slot];
 			}
 
+
 			bool operator== (const iterator& x) const {
 				return (x.curr_leaf == curr_leaf) && (x.curr_slot == curr_slot);
 			}
@@ -169,7 +167,7 @@ public:
 	};
 
 
-	Node<key_type,val_type>* getFirstNode(Node<key_type,val_type> *root){
+	Node<k_type,val_type>* getFirstNode(Node<k_type,val_type> *root){
 		if(root==NULL){
 			return NULL;
 		}
@@ -180,7 +178,7 @@ public:
 		return getFirstNode(root->ptr[0]);
 	}
 
-	Node<key_type,val_type>* getLastNode(Node<key_type,val_type> *root){
+	Node<k_type,val_type>* getLastNode(Node<k_type,val_type> *root){
 		if(root==NULL){
 			return NULL;
 		}
@@ -197,7 +195,7 @@ public:
 
 	iterator end() {
 		int slot;
-		Node<key_type,val_type> *last = getLastNode(root);
+		Node<k_type,val_type> *last = getLastNode(root);
 		if(last==NULL){
 			slot = 0;
 		}
@@ -208,49 +206,62 @@ public:
     }
 };
 
-template <typename key_type, typename val_type>	
-Node<key_type,val_type>::Node()
+template <typename k_type, typename val_type>	
+Node<k_type,val_type>::Node()
 {
 	//dynamic memory allocation
 	MAX = def_max;
-	key = new key_type[MAX];
-	ptr = new Node<key_type,val_type>*[MAX+1];
+	key = new k_type[MAX];
+	record = new val_type[MAX];
+	ptr = new Node<k_type,val_type>*[MAX+1];
 	IS_LEAF = false;
 }
 
-template <typename key_type, typename val_type>	
-Node<key_type,val_type>::Node(int MAX)
+template <typename k_type, typename val_type>	
+Node<k_type,val_type>::Node(int MAX)
 {
 	//dynamic memory allocation
 	MAX = MAX;
-	key = new key_type[MAX];
-	ptr = new Node<key_type,val_type>*[MAX+1];
+	key = new k_type[MAX];
+	record = new val_type[MAX];
+	ptr = new Node<k_type,val_type>*[MAX+1];
 	IS_LEAF = false;
 }
 
-template <typename key_type, typename val_type>	
-Node<key_type,val_type>::Node(const Node& n)
+template <typename k_type, typename val_type>	
+Node<k_type,val_type>::Node(const Node& n)
 {
 	MAX = n.MAX;
 	IS_LEAF = n.IS_LEAF;
 	size = n.size;
-	key = new key_type[MAX];
-	ptr = new Node<key_type,val_type>*[MAX+1];
+	key = new k_type[MAX];
+	record = new val_type[MAX];
+	ptr = new Node<k_type,val_type>*[MAX+1];
 	for(int i = 0; i < size; i++){
 		key[i] = n.key[i];
 	}
+	for(int i = 0; i < size; i++){
+		record[i] = n.record[i];
+	}
 }
 
-template <typename key_type, typename val_type>	
-Node<key_type,val_type>& Node<key_type,val_type>::operator=(const Node& N){
+template <typename k_type, typename val_type>	
+Node<k_type,val_type>& Node<k_type,val_type>::operator=(const Node& N){
 	if( this != &N)
 	{
 		delete[] key;	
+        delete[] record;
 	}
 	MAX = N.MAX;
-	key = new key_type[MAX];
+	key = new k_type[MAX];
+	record = new val_type[MAX];
+
 	for(int i = 0; i < size; i++){
 		key[i] = N.key[i];
+	}
+
+	for(int i = 0; i < size; i++){
+		record[i] = N.record[i];
 	}
 	int  i;
 	for(i = 0; i < size+1; i++){
@@ -261,8 +272,8 @@ Node<key_type,val_type>& Node<key_type,val_type>::operator=(const Node& N){
 	}
 }
 //default constructor
-template <typename key_type, typename val_type>	
-BPTree<key_type,val_type>::BPTree()
+template <typename k_type, typename val_type>	
+BPTree<k_type,val_type>::BPTree()
 {
 	root = NULL;
 	MAX = def_max;
@@ -270,16 +281,16 @@ BPTree<key_type,val_type>::BPTree()
 }
 
 //constructor
-template <typename key_type, typename val_type>	
-BPTree<key_type,val_type>::BPTree(int n)
+template <typename k_type, typename val_type>	
+BPTree<k_type,val_type>::BPTree(int n)
 {
 	root = NULL;
 	MAX = n;
 
 }
 
-template <typename key_type, typename val_type>	
-BPTree<key_type,val_type>::BPTree(const BPTree& T){
+template <typename k_type, typename val_type>	
+BPTree<k_type,val_type>::BPTree(const BPTree& T){
 	if(T.root == NULL){
 		root = NULL;
 	}
@@ -289,13 +300,13 @@ BPTree<key_type,val_type>::BPTree(const BPTree& T){
 	}
 }
 
-template <typename key_type, typename val_type>	
-Node<key_type,val_type> *copy_recursive(Node<key_type,val_type> *r){
+template <typename k_type, typename val_type>	
+Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r){
 	if( r == NULL){
 		return NULL;
 	}
 
-	Node<key_type,val_type> *NewNode = new Node<key_type,val_type>(*r);
+	Node<k_type,val_type> *NewNode = new Node<k_type,val_type>(*r);
 
 	for( int i = 0; i <= r->size; i+1){
 		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
@@ -303,8 +314,8 @@ Node<key_type,val_type> *copy_recursive(Node<key_type,val_type> *r){
 	return NewNode;
 }
 
-template <typename key_type, typename val_type>	
-void BPTree<key_type,val_type>::search(key_type x)
+template <typename k_type, typename val_type>	
+void BPTree<k_type,val_type>::search(k_type x)
 {
 	//search logic
 	if(root==NULL)
@@ -314,7 +325,7 @@ void BPTree<key_type,val_type>::search(key_type x)
 	}
 	else
 	{
-		Node<key_type,val_type>* cursor = root;
+		Node<k_type,val_type>* cursor = root;
 		//in the following while loop, cursor will travel to the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
 		{
@@ -345,22 +356,24 @@ void BPTree<key_type,val_type>::search(key_type x)
 	}
 }
 
-template <typename key_type, typename val_type>	
-void BPTree<key_type,val_type>::insert(key_type x)
+
+template <typename k_type, typename val_type>	
+void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 {
 	//insert logic
 	if(root==NULL)
 	{
-		root = new Node<key_type,val_type>;
+		root = new Node<k_type,val_type>;
 		root->key[0] = x;
+        root->record[0] = y;
 		root->IS_LEAF = true;
 		root->size = 1;
-		cout<<"Created root\nInserted "<<x<<" successfully\n";
+		cout<<"Created root\nInserted "<<x<<","<<y<<" successfully\n";
 	}
 	else
 	{
-		Node<key_type,val_type>* cursor = root;
-		Node<key_type,val_type>* parent;
+		Node<k_type,val_type>* cursor = root;
+		Node<k_type,val_type>* parent;
 		//in the following while loop, cursor will travel to OverfloOverflow in leaf node!w in leaf node!the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
 		{
@@ -390,25 +403,31 @@ void BPTree<key_type,val_type>::insert(key_type x)
 			for(int j = cursor->size;j > i; j--)
 			{
 				cursor->key[j] = cursor->key[j-1];
+				cursor->record[j] = cursor->record[j-1];
+
 			}
 			cursor->key[i] = x;
+			cursor->record[i] = y;
+
 			cursor->size++;
 			cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
 			cursor->ptr[cursor->size-1] = NULL;
-			cout<<"Inserted "<<x<<" successfully\n";
+			cout<<"Inserted "<<x<<","<<y<<" successfully\n";
 		}
 		else
 		{
-			cout<<"Inserted "<<x<<" successfully\n";
+			cout<<"Inserted "<<x<<","<<y<<" successfully\n";
 			cout<<"Overflow in leaf node!\nSplitting leaf node\n";
 			//overflow condition
 			//create new leaf node
-			Node<key_type,val_type>* newLeaf = new Node<key_type,val_type>;
+			Node<k_type,val_type>* newLeaf = new Node<k_type,val_type>;
 			//create a virtual node and insert x into it
-			key_type virtualNode[MAX+1];
+			k_type virtualNode[MAX+1];
+			val_type virtualValNode[MAX+1];
 			for(int i = 0; i < MAX; i++)
 			{
 				virtualNode[i] = cursor->key[i];
+				virtualValNode[i] = cursor->record[i];
 			}
 			int i = 0, j;
 			while(x > virtualNode[i] && i < MAX) i++;
@@ -416,8 +435,12 @@ void BPTree<key_type,val_type>::insert(key_type x)
 			for(int j = MAX;j > i; j--)
 			{
 				virtualNode[j] = virtualNode[j-1];
+				virtualValNode[j] = virtualValNode[j-1];
 			}
+
 			virtualNode[i] = x; 	
+			virtualValNode[i] = y; 	
+
 			newLeaf->IS_LEAF = true;
 			//split the cursor into two leaf nodes
 			cursor->size = (MAX+1)/2;
@@ -431,17 +454,23 @@ void BPTree<key_type,val_type>::insert(key_type x)
 			for(i = 0; i < cursor->size; i++)
 			{
 				cursor->key[i] = virtualNode[i];
+				cursor->record[i] = virtualValNode[i];
+                
 			}
 			for(i = 0, j = cursor->size; i <= newLeaf->size; i++, j++)
 			{
 				newLeaf->key[i] = virtualNode[j];
+				newLeaf->record[i] = virtualValNode[j];
+
+
 			}
 			//modify the parent
 			if(cursor == root)
 			{
 				//if cursor is a root node, we create a new root
-				Node<key_type,val_type>* newRoot = new Node<key_type,val_type>;
+				Node<k_type,val_type>* newRoot = new Node<k_type,val_type>;
 				newRoot->key[0] = newLeaf->key[0];
+				newRoot->record[0] = newLeaf->record[0];
 				newRoot->ptr[0] = cursor;
 				newRoot->ptr[1] = newLeaf;
 				newRoot->IS_LEAF = false;
@@ -452,14 +481,14 @@ void BPTree<key_type,val_type>::insert(key_type x)
 			else
 			{
 				//insert new key in parent node
-				insertInternal(newLeaf->key[0],parent,newLeaf);
+				insertInternal(newLeaf->key[0],newLeaf->record[0],parent,newLeaf);
 			}
 		}
 	}
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_type>* cursor, Node<key_type,val_type>* child)
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
 {
 	if(cursor->size < MAX)
 	{
@@ -471,12 +500,16 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		for(int j = cursor->size;j > i; j--)
 		{
 			cursor->key[j] = cursor->key[j-1];
+			cursor->record[j] = cursor->record[j-1];
+
 		}//make space for new pointer
 		for(int j = cursor->size+1; j > i+1; j--)
 		{
 			cursor->ptr[j] = cursor->ptr[j-1];
 		}
 		cursor->key[i] = x;
+		cursor->record[i] = y;
+
 		cursor->size++;
 		cursor->ptr[i+1] = child;
 		cout<<"Inserted key in an Internal node successfully\n";
@@ -487,13 +520,17 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		cout<<"Overflow in internal node!\nSplitting internal node\n";
 		//if overflow in internal node
 		//create new internal node
-		Node<key_type,val_type>* newInternal = new Node<key_type,val_type>;
+		Node<k_type,val_type>* newInternal = new Node<k_type,val_type>;
 		//create virtual Internal Node;
-		key_type virtualKey[MAX+1];
-		Node<key_type,val_type>* virtualPtr[MAX+2];
+		k_type virtualKey[MAX+1];
+		val_type virtualVal[MAX+1];
+
+		Node<k_type,val_type>* virtualPtr[MAX+2];
 		for(int i = 0; i < MAX; i++)
 		{
 			virtualKey[i] = cursor->key[i];
+			virtualVal[i] = cursor->record[i];
+            
 		}
 		for(int i = 0; i < MAX+1; i++)
 		{
@@ -505,8 +542,12 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		for(int j = MAX;j > i; j--)
 		{
 			virtualKey[j] = virtualKey[j-1];
+			virtualVal[j] = virtualVal[j-1];
+    
 		}
 		virtualKey[i] = x;
+		virtualVal[i] = y;
+
 		//make space for new ptr
 		for(int j = MAX+1;j > i+1; j--)
 		{
@@ -521,6 +562,9 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
 		{
 			newInternal->key[i] = virtualKey[j];
+			newInternal->record[i] = virtualVal[j];
+
+
 		}
 		for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
 		{
@@ -530,10 +574,14 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		for(i = 0; i < cursor->size; i++, j++)
 		{
 			cursor->key[i] = virtualKey[i];
+			cursor->record[i] = virtualVal[i];
+
 		}
 		for(i = 0; i < MAX; i++, j++)
 		{
 			cursor->key[i] = virtualKey[i];
+			cursor->record[i] = virtualVal[i];
+
 		}
 		for(i = 0; i < MAX+1; i++, j++)
 		{
@@ -543,8 +591,10 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		if(cursor == root)
 		{
 			//if cursor is a root node, we create a new root
-			Node<key_type,val_type>* newRoot = new Node<key_type,val_type>;
+			Node<k_type,val_type>* newRoot = new Node<k_type,val_type>;
 			newRoot->key[0] = cursor->key[cursor->size];
+			newRoot->record[0] = cursor->record[cursor->size];
+
 			newRoot->ptr[0] = cursor;
 			newRoot->ptr[1] = newInternal;
 			newRoot->IS_LEAF = false;
@@ -556,13 +606,13 @@ void BPTree<key_type,val_type>::insertInternal(key_type x, Node<key_type,val_typ
 		{
 			//recursion
 			//find depth first search to find parent of cursor
-			insertInternal(cursor->key[cursor->size] ,findParent(root,cursor) ,newInternal);
+			insertInternal(cursor->key[cursor->size] ,cursor->record[cursor->size], findParent(root,cursor) ,newInternal);
 		}
 	}
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::remove(key_type x)
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::remove(k_type x)
 {
 	//delete logic
 	if(root==NULL)
@@ -571,8 +621,8 @@ void BPTree<key_type,val_type>::remove(key_type x)
 	}
 	else
 	{
-		Node<key_type,val_type>* cursor = root;
-		Node<key_type,val_type>* parent;
+		Node<k_type,val_type>* cursor = root;
+		Node<k_type,val_type>* parent;
 		int leftSibling, rightSibling;
 		//in the following while loop, cursor will will travel to the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
@@ -648,7 +698,7 @@ void BPTree<key_type,val_type>::remove(key_type x)
 		//check if left sibling exists
 		if(leftSibling >= 0)
 		{
-			Node<key_type,val_type> *leftNode = parent->ptr[leftSibling];
+			Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
 			//check if it is possible to transfer
 			if(leftNode->size >= (MAX+1)/2+1)
 			{
@@ -675,7 +725,7 @@ void BPTree<key_type,val_type>::remove(key_type x)
 		}
 		if(rightSibling <= parent->size)//check if right sibling exist
 		{
-			Node<key_type,val_type> *rightNode = parent->ptr[rightSibling];
+			Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
 			//check if it is possible to transfer
 			if(rightNode->size >= (MAX+1)/2+1)
 			{
@@ -703,7 +753,7 @@ void BPTree<key_type,val_type>::remove(key_type x)
 		//must merge and delete a node
 		if(leftSibling >= 0)//if left sibling exist
 		{
-			Node<key_type,val_type>* leftNode = parent->ptr[leftSibling];
+			Node<k_type,val_type>* leftNode = parent->ptr[leftSibling];
 			// transfer all keys to leftsibling and then transfer pointer to next leaf node
 			for(int i = leftNode->size, j = 0; j < cursor->size; i++, j++)
 			{
@@ -720,7 +770,7 @@ void BPTree<key_type,val_type>::remove(key_type x)
 		}
 		else if(rightSibling <= parent->size)//if right sibling exist
 		{
-			Node<key_type,val_type>* rightNode = parent->ptr[rightSibling];
+			Node<k_type,val_type>* rightNode = parent->ptr[rightSibling];
 			// transfer all keys to cursor and then transfer pointer to next leaf node
 			for(int i = cursor->size, j = 0; j < rightNode->size; i++, j++)
 			{
@@ -738,8 +788,8 @@ void BPTree<key_type,val_type>::remove(key_type x)
 	}
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_type>* cursor, Node<key_type,val_type>* child)
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
 {
 	//deleting the key x first
 	//checking if key from root is to be deleted
@@ -806,7 +856,7 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 	cout<<"Underflow in internal node!\n";
 	//underflow, try to transfer first
 	if(cursor==root)return;
-	Node<key_type,val_type>* parent = findParent(root, cursor);
+	Node<k_type,val_type>* parent = findParent(root, cursor);
 	int leftSibling, rightSibling;
 	//finding left n right sibling of cursor
 	for(pos = 0; pos < parent->size+1; pos++)
@@ -821,7 +871,7 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 	//try to transfer
 	if(leftSibling >= 0)//if left sibling exists
 	{
-		Node<key_type,val_type> *leftNode = parent->ptr[leftSibling];
+		Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
 		//check if it is possible to transfer
 		if(leftNode->size >= (MAX+1)/2)
 		{
@@ -849,7 +899,7 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 	}
 	if(rightSibling <= parent->size)//check if right sibling exist
 	{
-		Node<key_type,val_type> *rightNode = parent->ptr[rightSibling];
+		Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
 		//check if it is possible to transfer
 		if(rightNode->size >= (MAX+1)/2)
 		{
@@ -877,7 +927,7 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 	if(leftSibling >= 0)
 	{
 		//leftnode + parent key + cursor
-		Node<key_type,val_type> *leftNode = parent->ptr[leftSibling];
+		Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
 		leftNode->key[leftNode->size] = parent->key[leftSibling];
 		for(int i = leftNode->size+1, j = 0; j < cursor->size; j++)
 		{
@@ -898,7 +948,7 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 	else if(rightSibling <= parent->size)
 	{
 		//cursor + parent key + rightnode
-		Node<key_type,val_type> *rightNode = parent->ptr[rightSibling];
+		Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
 		cursor->key[cursor->size] = parent->key[rightSibling-1];
 		for(int i = cursor->size+1, j = 0; j < rightNode->size; j++)
 		{
@@ -918,12 +968,12 @@ void BPTree<key_type,val_type>::removeInternal(key_type x, Node<key_type,val_typ
 }
 
 
-template<typename key_type, typename val_type>
-Node<key_type,val_type>* BPTree<key_type,val_type>::findParent(Node<key_type,val_type>* cursor, Node<key_type,val_type>* child)
+template<typename k_type, typename val_type>
+Node<k_type,val_type>* BPTree<k_type,val_type>::findParent(Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
 {
 	//finds parent using depth first traversal and ignores leaf nodes as they cannot be parents
 	//also ignores second last level because we will never find parent of a leaf node during insertion using this function
-	Node<key_type,val_type>* parent;
+	Node<k_type,val_type>* parent;
 	if(cursor->IS_LEAF || (cursor->ptr[0])->IS_LEAF)
 	{
 		return NULL;
@@ -944,19 +994,19 @@ Node<key_type,val_type>* BPTree<key_type,val_type>::findParent(Node<key_type,val
 	return parent;
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::display(Node<key_type,val_type>* cursor)
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::display(Node<k_type,val_type>* cursor)
 {
 	//depth first display
 	if(cursor!=NULL)
 	{
 		if(cursor->IS_LEAF == true)
 		{
-			cout << "L ";
+			cout << "L  ";
 		}
 		for(int i = 0; i < cursor->size; i++)
 		{
-			cout<<cursor->key[i]<<" ";
+			cout<<cursor->key[i]<<","<<cursor->record[i]<<"  ";
 		}
 		cout<<"\n";
 		if(cursor->IS_LEAF != true)
@@ -969,20 +1019,20 @@ void BPTree<key_type,val_type>::display(Node<key_type,val_type>* cursor)
 	}
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::display_tree(){
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::display_tree(){
 	display(getRoot());
 }
 
 
-template<typename key_type, typename val_type>
-Node<key_type,val_type>* BPTree<key_type,val_type>::getRoot()
+template<typename k_type, typename val_type>
+Node<k_type,val_type>* BPTree<k_type,val_type>::getRoot()
 {
 	return root;
 }
 
-template<typename key_type, typename val_type>
-void BPTree<key_type,val_type>::cleanUp(Node<key_type,val_type>* cursor)
+template<typename k_type, typename val_type>
+void BPTree<k_type,val_type>::cleanUp(Node<k_type,val_type>* cursor)
 {
 	//clean up logic
 	if(cursor!=NULL)
@@ -999,13 +1049,14 @@ void BPTree<key_type,val_type>::cleanUp(Node<key_type,val_type>* cursor)
 			cout<<"Deleted key from memory: "<<cursor->key[i]<<"\n";
 		}
 		delete[] cursor->key;
+        delete[] cursor->record;
 		delete[] cursor->ptr;
 		delete cursor;
 	}
 }
 
-template<typename key_type, typename val_type>
-BPTree<key_type,val_type>::~BPTree()
+template<typename k_type, typename val_type>
+BPTree<k_type,val_type>::~BPTree()
 {
 	//calling cleanUp routine
 	cleanUp(root);
@@ -1144,23 +1195,23 @@ int main(){
 	BPTree<string,string> bpt2(3);
 
 	//B+ tree object that carries out all the operations
-    bpt.insert("1");
-    bpt.insert("3");
-    bpt.insert("2");
-    bpt.insert("4");
-    bpt.insert("5");
-    bpt.insert("6");
+    bpt.insert("1","amk");
+    bpt.insert("2","b");
+    bpt.insert("3","c");
+    bpt.insert("4","d");
+    bpt.insert("5","e");
+    bpt.insert("6","f");
 
     bpt.display_tree();
 
-	bpt2.insert("1");
-    bpt2.insert("3");
-    bpt2.insert("2");
-    bpt2.insert("4");
-    bpt2.insert("5");
-    bpt2.insert("6");
+	// bpt2.insert("1");
+    // bpt2.insert("3");
+    // bpt2.insert("2");
+    // bpt2.insert("4");
+    // bpt2.insert("5");
+    // bpt2.insert("6");
 
-    bpt2.display_tree();
+    // bpt2.display_tree();
 	// vector<int> v= {1,2,3};
 	// vector<int>::iterator it;
 	//it = find(v.begin(),v.end(),1);
