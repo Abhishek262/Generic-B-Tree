@@ -667,8 +667,11 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		//deleting the key
 		for(int i = pos; i < cursor->size; i++)
 		{
-			cursor->key[i] = cursor->key[i+1];
-			cursor->record[i] = cursor->record[i+1];
+			if(i<cursor->MAX-1){
+
+				cursor->key[i] = cursor->key[i+1];
+				cursor->record[i] = cursor->record[i+1];
+			}
 
 		}
 		cursor->size--;
@@ -1133,8 +1136,13 @@ int main(){
 	bpt.insert("12","C++");
     // bpt.remove("5");
 	
-	bpt["5"] = "sg";
+	// bpt["5"] = "sg";
 	//cout << bpt["5"]<<endl;
+    bpt.display_tree();
+
+	bpt.remove("11");
+	// bpt.remove("12");
+
     bpt.display_tree();
 
 	// bpt2.insert("1");

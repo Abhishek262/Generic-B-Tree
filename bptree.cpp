@@ -1145,22 +1145,32 @@ int main(){
 
 	//B+ tree object that carries out all the operations
     bpt.insert("1");
-    bpt.insert("3");
     bpt.insert("2");
-    bpt.insert("4");
+    bpt.insert("3");
+    bpt.insert("4a");
     bpt.insert("5");
     bpt.insert("6");
-
+	bpt.insert("7");
+	bpt.insert("8");
+	bpt.insert("9");
+	bpt.insert("10");
+	bpt.insert("11");
+	bpt.insert("12");
     bpt.display_tree();
 
-	bpt2.insert("1");
-    bpt2.insert("3");
-    bpt2.insert("2");
-    bpt2.insert("4");
-    bpt2.insert("5");
-    bpt2.insert("6");
+	bpt.remove("11");
+    bpt.display_tree();
 
-    bpt2.display_tree();
+	// bpt.remove("5");
+
+	// bpt2.insert("1");
+    // bpt2.insert("3");
+    // bpt2.insert("2");
+    // bpt2.insert("4");
+    // bpt2.insert("5");
+    // bpt2.insert("6");
+
+    // bpt2.display_tree();
 	// vector<int> v= {1,2,3};
 	// vector<int>::iterator it;
 	//it = find(v.begin(),v.end(),1);
