@@ -733,7 +733,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 				parent->key[leftSibling] = cursor->key[0];
 				parent->record[leftSibling] = cursor->record[0];
 
-				cout<<"Transferred "<<cursor->key[0]<<" from left sibling of leaf node\n";
+				// cout<<"Transferred "<<cursor->key[0]<<" from left sibling of leaf node\n";
 				return;
 			}
 		}
@@ -764,7 +764,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 				parent->key[rightSibling-1] = rightNode->key[0];
 				parent->record[rightSibling-1] = rightNode->record[0];
 
-				cout<<"Transferred "<<cursor->key[cursor->size-1]<<" from right sibling of leaf node\n";
+				// cout<<"Transferred "<<cursor->key[cursor->size-1]<<" from right sibling of leaf node\n";
 				return;
 			}
 		}
@@ -1072,11 +1072,15 @@ void BPTree<k_type,val_type>::display(Node<k_type,val_type>* cursor)
 			}
 		}
 	}
+
 }
 
 template<typename k_type, typename val_type>
 void BPTree<k_type,val_type>::display_tree(){
+	cout << "______________________________________\n";
 	display(getRoot());
+	cout << "______________________________________\n";
+
 }
 
 
@@ -1119,7 +1123,6 @@ BPTree<k_type,val_type>::~BPTree()
 
 int main(){
 	BPTree<string,string> bpt(3);
-	BPTree<string,string> bpt2(3);
 
 	//B+ tree object that carries out all the operations
     bpt.insert("1","amk");
@@ -1136,39 +1139,35 @@ int main(){
 	bpt.insert("12","C++");
     // bpt.remove("5");
 	
-	// bpt["5"] = "sg";
+	bpt["5"] = "sg";
 	//cout << bpt["5"]<<endl;
+
     bpt.display_tree();
 
 	bpt.remove("11");
-	// bpt.remove("12");
+	bpt.remove("12");
 
     bpt.display_tree();
 
-	// bpt2.insert("1");
-    // bpt2.insert("3");
-    // bpt2.insert("2");
-    // bpt2.insert("4");
-    // bpt2.insert("5");
-    // bpt2.insert("6");
-
-    // bpt2.display_tree();
-	// vector<int> v= {1,2,3};
-	// vector<int>::iterator it;
-	//it = find(v.begin(),v.end(),1);
-	//cout << *it<< endl;
-
 	BPTree<string,string>::iterator it_b;
 
-	// it_b =find(bpt.begin(),bpt.end(),"e");
-	// // copy(bpt.begin(),bpt.end(),bpt2.begin());
-	// // sort(bpt.begin(),bpt.end());
-	// // it_b = lower_bound(bpt.begin(),bpt.end(),4);
-	// // cout << *it_b;
-	// // cout << *it_b;
-	// // ++it_b;
-	// // cout << *it_b;
-	// if (it_b != bpt.end()){
-	// 	cout << *it_b<< endl;
-	// }
+	it_b =find(bpt.begin(),bpt.end(),"10");
+
+	if (it_b != bpt.end()){
+		cout << *it_b<< endl;
+	}
+
+	replace(bpt.begin(),bpt.end(),string("9"),string("9_new"));
+    bpt.display_tree();
+
+	it_b = upper_bound(bpt.begin(),bpt.end(),"7");
+	cout << *it_b<<endl;
+
+	it_b = lower_bound(bpt.begin(),bpt.end(),"6");
+	cout << *it_b<<endl;
+
+	// bpt2 = bpt;
+	// bpt2.display_tree();
+	BPTree<string,string> bpt2 = bpt;
+
 }
