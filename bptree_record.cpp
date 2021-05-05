@@ -68,6 +68,7 @@ public:
 	void remove(k_type);
 	void display(Node<k_type,val_type>*);
 	void display_tree();
+	Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r);
 	val_type& operator[] (k_type key);
 	Node<k_type,val_type>* getRoot();
 	void cleanUp(Node<k_type,val_type>*);
@@ -303,14 +304,14 @@ BPTree<k_type,val_type>::BPTree(const BPTree& T){
 }
 
 template <typename k_type, typename val_type>	
-Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r){
+Node<k_type,val_type>* BPTree<k_type,val_type>::copy_recursive(Node<k_type,val_type> *r){
 	if( r == NULL){
 		return NULL;
 	}
 
 	Node<k_type,val_type> *NewNode = new Node<k_type,val_type>(*r);
 
-	for( int i = 0; i <= r->size; i+1){
+	for( int i = 0; i <= r->size; i++){
 		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
 	}
 	return NewNode;
@@ -1123,6 +1124,7 @@ BPTree<k_type,val_type>::~BPTree()
 
 int main(){
 	BPTree<string,string> bpt(3);
+	BPTree<string,string> bpt3;
 
 	//B+ tree object that carries out all the operations
     bpt.insert("1","amk");
@@ -1142,7 +1144,7 @@ int main(){
 	bpt["5"] = "sg";
 	//cout << bpt["5"]<<endl;
 
-    bpt.display_tree();
+    bpt.display_tree();	
 
 	bpt.remove("11");
 	bpt.remove("12");
@@ -1168,6 +1170,9 @@ int main(){
 
 	// bpt2 = bpt;
 	// bpt2.display_tree();
+	// BPTreebpt2 = bpt;
 	BPTree<string,string> bpt2 = bpt;
+	bpt2.display_tree();
 
+	bpt3 = bpt;
 }
