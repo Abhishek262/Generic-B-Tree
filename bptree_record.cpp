@@ -57,6 +57,7 @@ public:
 	void remove(k_type);
 	void display(Node<k_type,val_type>*);
 	void display_tree();
+	bool empty();
 	Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r);
 	val_type& operator[] (k_type key);
 	Node<k_type,val_type>* getRoot();
@@ -289,6 +290,16 @@ BPTree<k_type,val_type>::BPTree(const BPTree& T){
 	else{
 		MAX = T.MAX;
 		root = copy_recursive(T.root);
+	}
+}
+
+template <typename k_type, typename val_type>	
+bool BPTree<k_type,val_type>::empty(){
+	if(root==NULL){
+		return true;
+	}
+	else{
+		return false;
 	}
 }
 
