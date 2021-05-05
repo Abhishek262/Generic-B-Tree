@@ -319,10 +319,11 @@ Node<k_type,val_type>* BPTree<k_type,val_type>::copy_recursive(Node<k_type,val_t
 
 template <typename k_type, typename val_type>	
 BPTree<k_type,val_type>& BPTree<k_type,val_type>::operator=(const BPTree<k_type,val_type> &T){
-	if(this != T){
-		cleanup(this.root);
+	if(this != &T){
+		cleanUp(this->root);
 		if(T.root == NULL){
-			return NULL;
+			root = NULL;
+			return *this;
 		}
 		else{
 			root = copy_recursive(T.root);
@@ -1189,4 +1190,5 @@ int main(){
 	bpt2.display_tree();
 
 	bpt3 = bpt;
+	bpt3.display_tree();
 }
