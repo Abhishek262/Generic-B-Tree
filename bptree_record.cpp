@@ -50,18 +50,7 @@ public:
 	BPTree();
 	BPTree(int MAX);
 	BPTree(const BPTree& T);
-	BPTree& operator= (const BPTree& T){
-		if(this != T){
-			cleanup(this.root);
-			if(T.root == NULL){
-				return NULL;
-			}
-			else{
-				root = copy_recursive(T.root);
-			}
-		}
-		return *this;
-	}
+	BPTree<k_type,val_type>& operator= (const BPTree<k_type,val_type>& T);
 	//move
 	bool search(k_type);
 	void insert(k_type,val_type);
@@ -315,6 +304,20 @@ Node<k_type,val_type>* BPTree<k_type,val_type>::copy_recursive(Node<k_type,val_t
 		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
 	}
 	return NewNode;
+}
+
+template <typename k_type, typename val_type>	
+BPTree<k_type,val_type>& BPTree<k_type,val_type>::operator=(const BPTree<k_type,val_type> &T){
+	if(this != T){
+		cleanup(this.root);
+		if(T.root == NULL){
+			return NULL;
+		}
+		else{
+			root = copy_recursive(T.root);
+		}
+	}
+	return *this;
 }
 
 template <typename k_type, typename val_type>	
