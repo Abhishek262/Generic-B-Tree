@@ -41,7 +41,7 @@ class BPTree
 {
 	Node<k_type,val_type> *root;
 	int MAX;
-	void insertInternal(k_type,val_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
+	void insertInternal(k_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
 	void removeInternal(k_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
 	Node<k_type,val_type>* findParent(Node<k_type,val_type>*,Node<k_type,val_type>*);
 
@@ -63,7 +63,7 @@ public:
 		return *this;
 	}
 	//move
-	void search(k_type);
+	bool search(k_type);
 	void insert(k_type,val_type);
 	void remove(k_type);
 	void display(Node<k_type,val_type>*);
@@ -119,12 +119,10 @@ public:
 					++curr_slot;
 				}
 				else if (curr_leaf->ptr[curr_leaf->size] != NULL) {
-					//cout << "NULL";
 					curr_leaf = curr_leaf->ptr[curr_leaf->size];
 					curr_slot = 0;
 				}
 				else {
-					// this is end()
 					curr_slot = curr_leaf->size;
 				}
 
@@ -152,7 +150,6 @@ public:
 			};
 
 			reference operator* () const {
-				//cout << "VAL" << curr_leaf->key[curr_slot] <<"\t"<< curr_slot<< endl;
 				return curr_leaf->key[curr_slot];
 			}	
 
@@ -325,9 +322,6 @@ val_type& BPTree<k_type,val_type>::operator[] (k_type key){
 	iterator it_b;
 	it_b =find(begin(),end(),key);
 	if (it_b != end()){
-		// cout << it_b.value()<< endl;
-		// val_type x;
-		// x = it_b.value();
 		val_type *x = it_b.valuep();
 		return *x;
 	}
@@ -338,7 +332,7 @@ val_type& BPTree<k_type,val_type>::operator[] (k_type key){
 
 
 template <typename k_type, typename val_type>	
-void BPTree<k_type,val_type>::search(k_type x)
+bool BPTree<k_type,val_type>::search(k_type x)
 {
 	//search logic
 	if(root==NULL)
@@ -372,10 +366,11 @@ void BPTree<k_type,val_type>::search(k_type x)
 			if(cursor->key[i] == x)
 			{
 				cout<<"Found\n";
-				return;
+				return true;
 			}
 		}
 		cout<<"Not found\n";
+		return false;
 	}
 }
 
@@ -391,7 +386,7 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
         root->record[0] = y;
 		root->IS_LEAF = true;
 		root->size = 1;
-		cout<<"Created root\nInserted "<<x<<","<<y<<" successfully\n";
+		//cout<<"Created root\nInserted "<<x<<","<<y<<" successfully\n";
 	}
 	else
 	{
@@ -435,16 +430,15 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 			cursor->size++;
 			cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
 			cursor->ptr[cursor->size-1] = NULL;
-			cout<<"Inserted "<<x<<","<<y<<" successfully\n";
+			//cout<<"Inserted "<<x<<","<<y<<" successfully\n";
 		}
 		else
 		{
-			cout<<"Inserted "<<x<<","<<y<<" successfully\n";
-			cout<<"Overflow in leaf node!\nSplitting leaf node\n";
+			//cout<<"Inserted "<<x<<","<<y<<" successfully\n";
+			//cout<<"Overflow in leaf node!\nSplitting leaf node\n";
 			//overflow condition
 			//create new leaf node
 			Node<k_type,val_type>* newLeaf = new Node<k_type,val_type>;
-			//create a virtual node and insert x into it
 			k_type virtualNode[MAX+1];
 			val_type virtualValNode[MAX+1];
 			for(int i = 0; i < MAX; i++)
@@ -499,19 +493,19 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 				newRoot->IS_LEAF = false;
 				newRoot->size = 1;
 				root = newRoot;
-				cout<<"Created new root\n";
+				//cout<<"Created new root\n";
 			}
 			else
 			{
 				//insert new key in parent node
-				insertInternal(newLeaf->key[0],newLeaf->record[0],parent,newLeaf);
+				insertInternal(newLeaf->key[0],parent,newLeaf);
 			}
 		}
 	}
 }
 
 template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
+void BPTree<k_type,val_type>::insertInternal(k_type x, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
 {
 	if(cursor->size < MAX)
 	{
@@ -523,7 +517,6 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 		for(int j = cursor->size;j > i; j--)
 		{
 			cursor->key[j] = cursor->key[j-1];
-			cursor->record[j] = cursor->record[j-1];
 
 		}//make space for new pointer
 		for(int j = cursor->size+1; j > i+1; j--)
@@ -531,28 +524,25 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 			cursor->ptr[j] = cursor->ptr[j-1];
 		}
 		cursor->key[i] = x;
-		cursor->record[i] = y;
 
 		cursor->size++;
 		cursor->ptr[i+1] = child;
-		cout<<"Inserted key in an Internal node successfully\n";
+		//cout<<"Inserted key in an Internal node successfully\n";
 	}
 	else
 	{
-		cout<<"Inserted key in an Internal node successfully\n";
-		cout<<"Overflow in internal node!\nSplitting internal node\n";
+		//cout<<"Inserted key in an Internal node successfully\n";
+		//cout<<"Overflow in internal node!\nSplitting internal node\n";
 		//if overflow in internal node
 		//create new internal node
 		Node<k_type,val_type>* newInternal = new Node<k_type,val_type>;
 		//create virtual Internal Node;
 		k_type virtualKey[MAX+1];
-		val_type virtualVal[MAX+1];
 
 		Node<k_type,val_type>* virtualPtr[MAX+2];
 		for(int i = 0; i < MAX; i++)
 		{
 			virtualKey[i] = cursor->key[i];
-			virtualVal[i] = cursor->record[i];
             
 		}
 		for(int i = 0; i < MAX+1; i++)
@@ -565,12 +555,9 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 		for(int j = MAX;j > i; j--)
 		{
 			virtualKey[j] = virtualKey[j-1];
-			virtualVal[j] = virtualVal[j-1];
     
 		}
 		virtualKey[i] = x;
-		virtualVal[i] = y;
-
 		//make space for new ptr
 		for(int j = MAX+1;j > i+1; j--)
 		{
@@ -585,9 +572,6 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 		for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
 		{
 			newInternal->key[i] = virtualKey[j];
-			newInternal->record[i] = virtualVal[j];
-
-
 		}
 		for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
 		{
@@ -597,14 +581,11 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 		for(i = 0; i < cursor->size; i++, j++)
 		{
 			cursor->key[i] = virtualKey[i];
-			cursor->record[i] = virtualVal[i];
 
 		}
 		for(i = 0; i < MAX; i++, j++)
 		{
 			cursor->key[i] = virtualKey[i];
-			cursor->record[i] = virtualVal[i];
-
 		}
 		for(i = 0; i < MAX+1; i++, j++)
 		{
@@ -616,20 +597,18 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, val_type y, Node<k_type,v
 			//if cursor is a root node, we create a new root
 			Node<k_type,val_type>* newRoot = new Node<k_type,val_type>;
 			newRoot->key[0] = cursor->key[cursor->size];
-			newRoot->record[0] = cursor->record[cursor->size];
-
 			newRoot->ptr[0] = cursor;
 			newRoot->ptr[1] = newInternal;
 			newRoot->IS_LEAF = false;
 			newRoot->size = 1;
 			root = newRoot;
-			cout<<"Created new root\n";
+			//cout<<"Created new root\n";
 		}
 		else
 		{
 			//recursion
 			//find depth first search to find parent of cursor
-			insertInternal(cursor->key[cursor->size] ,cursor->record[cursor->size], findParent(root,cursor) ,newInternal);
+			insertInternal(cursor->key[cursor->size] , findParent(root,cursor) ,newInternal);
 		}
 	}
 }
@@ -682,7 +661,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		}
 		if(!found)//if key does not exist in that leaf node
 		{
-			cout<<"Not found\n";
+			//cout<<"Not found\n";
 			return;
 		}
 		//deleting the key
@@ -695,14 +674,14 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		cursor->size--;
 		if(cursor == root)//if it is root node, then make all pointers NULL
 		{
-			cout<<"Deleted "<<x<<" from leaf node successfully\n";
+			//cout<<"Deleted "<<x<<" from leaf node successfully\n";
 			for(int i = 0; i < MAX+1; i++)
 			{
 				cursor->ptr[i] = NULL;
 			}
 			if(cursor->size == 0)//if all keys are deleted
 			{
-				cout<<"Tree died\n";
+				//cout<<"Tree died\n";
 				delete[] cursor->key;
 				delete[] cursor->record;
 				delete[] cursor->ptr;
@@ -713,12 +692,12 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		}
 		cursor->ptr[cursor->size] = cursor->ptr[cursor->size+1];
 		cursor->ptr[cursor->size+1] = NULL;
-		cout<<"Deleted "<<x<<" from leaf node successfully\n";
+		//cout<<"Deleted "<<x<<" from leaf node successfully\n";
 		if(cursor->size >= (MAX+1)/2)//no underflow
 		{
 			return;
 		}
-		cout<<"Underflow in leaf node!\n";
+		//cout<<"Underflow in leaf node!\n";
 		//underflow condition
 		//first we try to transfer a key from sibling node
 		//check if left sibling exists
@@ -800,7 +779,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			leftNode->ptr[leftNode->size] = NULL;
 			leftNode->size += cursor->size;
 			leftNode->ptr[leftNode->size] = cursor->ptr[cursor->size];
-			cout<<"Merging two leaf nodes\n";
+			//cout<<"Merging two leaf nodes\n";
 			removeInternal(parent->key[leftSibling],parent,cursor);// delete parent node key
 			delete[] cursor->key;
 			delete[] cursor->record;
@@ -820,7 +799,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 			cursor->ptr[cursor->size] = NULL;
 			cursor->size += rightNode->size;
 			cursor->ptr[cursor->size] = rightNode->ptr[rightNode->size];
-			cout<<"Merging two leaf nodes\n";
+			//cout<<"Merging two leaf nodes\n";
 			removeInternal(parent->key[rightSibling-1],parent,rightNode);// delete parent node key
 			delete[] rightNode->key;
 			delete[] rightNode->record;
@@ -850,7 +829,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 				delete[] cursor->record;
 				delete[] cursor->ptr;
 				delete cursor;
-				cout<<"Changed root node\n";
+				//cout<<"Changed root node\n";
 				return;
 			}
 			else if(cursor->ptr[0] == child)
@@ -864,7 +843,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 				delete[] cursor->record;
 				delete[] cursor->ptr;
 				delete cursor;
-				cout<<"Changed root node\n";
+				//cout<<"Changed root node\n";
 				return;
 			}
 		}
@@ -898,10 +877,10 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	cursor->size--;
 	if(cursor->size >= (MAX+1)/2-1)//no underflow
 	{
-		cout<<"Deleted "<<x<<" from internal node successfully\n";
+		//cout<<"Deleted "<<x<<" from internal node successfully\n";
 		return;
 	}
-	cout<<"Underflow in internal node!\n";
+	//cout<<"Underflow in internal node!\n";
 	//underflow, try to transfer first
 	if(cursor==root)return;
 	Node<k_type,val_type>* parent = findParent(root, cursor);
@@ -947,7 +926,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 			cursor->ptr[0] = leftNode->ptr[leftNode->size];
 			cursor->size++;
 			leftNode->size--;
-			cout<<"Transferred "<<cursor->key[0]<<" from left sibling of internal node\n";
+			//cout<<"Transferred "<<cursor->key[0]<<" from left sibling of internal node\n";
 			return;
 		}
 	}
@@ -980,7 +959,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 			}
 			cursor->size++;
 			rightNode->size--;
-			cout<<"Transferred "<<cursor->key[0]<<" from right sibling of internal node\n";
+			//cout<<"Transferred "<<cursor->key[0]<<" from right sibling of internal node\n";
 			return;
 		}
 	}
@@ -1007,7 +986,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 		cursor->size = 0;
 		//delete cursor
 		removeInternal(parent->key[leftSibling], parent, cursor);
-		cout<<"Merged with left sibling\n";
+		//cout<<"Merged with left sibling\n";
 
 	}
 	else if(rightSibling <= parent->size)
@@ -1030,7 +1009,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 		rightNode->size = 0;
 		//delete cursor
 		removeInternal(parent->key[rightSibling-1], parent, rightNode);
-		cout<<"Merged with right sibling\n";
+		//cout<<"Merged with right sibling\n";
 	}
 }
 
@@ -1073,7 +1052,13 @@ void BPTree<k_type,val_type>::display(Node<k_type,val_type>* cursor)
 		}
 		for(int i = 0; i < cursor->size; i++)
 		{
-			cout<<cursor->key[i]<<","<<cursor->record[i]<<"  ";
+			if(cursor->IS_LEAF == true)
+			{
+				cout<<cursor->key[i]<<","<<cursor->record[i]<<"  ";
+			}
+			else{
+				cout<<cursor->key[i] << " ";
+			}
 		}
 		cout<<"\n";
 		if(cursor->IS_LEAF != true)
@@ -1113,7 +1098,7 @@ void BPTree<k_type,val_type>::cleanUp(Node<k_type,val_type>* cursor)
 		}
 		for(int i = 0; i < cursor->size; i++)
 		{
-			cout<<"Deleted key from memory: "<<cursor->key[i]<<"\n";
+			//cout<<"Deleted key from memory: "<<cursor->key[i]<<"\n";
 		}
 		delete[] cursor->key;
         delete[] cursor->record;
@@ -1126,138 +1111,8 @@ template<typename k_type, typename val_type>
 BPTree<k_type,val_type>::~BPTree()
 {
 	//calling cleanUp routine
-    // cout << "\nFreeing all memory\n";
-
 	cleanUp(root);
 }
-
-// give command line argument to load a tree from log
-// to create a fresh tree, do not give any command line argument
-
-// int main(int argc, char* argv[])
-// {
-// 	string command;
-// 	string x;
-// 	bool close = false;
-// 	string logBuffer;//used to save into log
-// 	ifstream fin;
-// 	ofstream fout;
-// 	//create tree from log file from command line input
-// 	// if(argc > 1)
-// 	// {
-// 	// 	fin.open(argv[1]);//open file
-// 	// 	if(!fin.is_open())
-// 	// 	{
-// 	// 		cout<<"File not found\n";
-// 	// 		return 0;
-// 	// 	}
-// 	// 	int i = 1;
-// 	// 	getline(fin, logBuffer, '\0');//copy log from file to logBuffer for saving purpose
-// 	// 	fin.close();
-// 	// 	fin.open(argv[1]);//reopening file
-// 	// 	getline(fin,command);
-// 	// 	stringstream max(command);//first line of log contains the max degree
-// 	// 	while(getline(fin,command))//iterating over every line ie command
-// 	// 	{
-// 	// 		if(!command.substr(0,6).compare("insert"))
-// 	// 		{
-// 	// 			stringstream argument(command.substr(7));
-// 	// 			argument>>x;
-// 	// 			bpt.insert(x);
-// 	// 		}
-// 	// 		else if(!command.substr(0,6).compare("delete"))
-// 	// 		{
-// 	// 			stringstream argument(command.substr(7));
-// 	// 			argument>>x;
-// 	// 			bpt.remove(x);
-// 	// 		}
-// 	// 		else
-// 	// 		{
-// 	// 			cout<<"Unknown command: "<<command<<" at line #"<<i<<"\n";
-// 	// 			return 0;
-// 	// 		}
-// 	// 		i++;
-// 	// 	}
-// 	// 	cout<<"Tree loaded successfully from: \""<<argv[1]<<"\"\n";
-// 	// 	fin.close();
-// 	// }
-
-
-// 	// else//create fresh tree
-// 	// {
-// 	cout<<"Enter the max degree\n";
-// 	cin>>command;
-// 	stringstream max(command);
-// 	int MAX;
-// 	max>>MAX;
-// 	BPTree<string,string> bpt(MAX);//B+ tree object that carries out all the operations
-
-// 	logBuffer.append(command);
-// 	logBuffer.append("\n");
-// 	cin.clear();
-// 	cin.ignore(1);
-// 	// }
-
-// 	// command line menu
-// 	cout<<"Commands:\nsearch <value> to search\n";
-// 	cout<<"insert <value> to insert\n";
-// 	cout<<"delete <value> to delete\n";
-// 	cout<<"display to display\n";
-// 	cout<<"save to save log\n";
-// 	cout<<"exit to exit\n";
-// 	do
-// 	{
-// 		cout<<"Enter command: ";
-// 		getline(cin,command);
-// 		if(!command.substr(0,6).compare("search"))
-// 		{
-// 			stringstream argument(command.substr(7));
-// 			argument>>x;
-// 			bpt.search(x);
-// 		}
-// 		else if(!command.substr(0,6).compare("insert"))
-// 		{
-// 			stringstream argument(command.substr(7));
-// 			argument>>x;
-// 			bpt.insert(x);
-// 			logBuffer.append(command);
-// 			logBuffer.append("\n");
-// 		}
-// 		else if(!command.substr(0,6).compare("delete"))
-// 		{
-// 			stringstream argument(command.substr(7));
-// 			argument>>x;
-// 			bpt.remove(x);
-// 			logBuffer.append(command);
-// 			logBuffer.append("\n");
-// 		}
-// 		else if(!command.compare("display"))
-// 		{
-// 			bpt.display(bpt.getRoot());
-// 		}
-// 		else if(!command.compare("save"))
-// 		{
-// 			cout<<"Enter file name: ";
-// 			string filename;
-// 			cin>>filename;
-// 			fout.open(filename);
-// 			fout<<logBuffer;
-// 			fout.close();
-// 			cout<<"Saved successfully into file: \""<<filename<<"\"\n";
-// 			cin.clear();
-// 			cin.ignore(1);
-// 		}
-// 		else if(!command.compare("exit"))
-// 		{
-// 			close = true;
-// 		}
-// 		else
-// 		{
-// 			cout<<"Invalid command\n";
-// 		}
-// 	}while(!close);
-// 	return 0;
-// }
 
 int main(){
 	BPTree<string,string> bpt(3);
@@ -1270,11 +1125,17 @@ int main(){
     bpt.insert("4a","d");
     bpt.insert("5","e");
     bpt.insert("6","f");
+	bpt.insert("7","ggg");
+	bpt.insert("8","a");
+	bpt.insert("9","hi");
+	bpt.insert("10","hello");
+	bpt.insert("11","hi");
+	bpt.insert("12","C++");
     // bpt.remove("5");
 	
 	bpt["5"] = "sg";
-	cout <<endl<< bpt["5"]<<endl;
-    // bpt.display_tree();
+	//cout << bpt["5"]<<endl;
+    bpt.display_tree();
 
 	// bpt2.insert("1");
     // bpt2.insert("3");
