@@ -55,7 +55,7 @@ struct compareMod{
 
 int main(){
 	BPTree<newType,newType,compareMod> bpt(3);
-	// BPTree<string,string> bpt3;
+	BPTree<string,string> bpt(3);
 
 	//B+ tree object that carries out all the operations
 
@@ -70,9 +70,9 @@ int main(){
 
     bpt.insert(newType(62),newType(23));
 
-    // bpt.insert("2","b");
+    bpt.insert("2","b");
 
-    // bpt.insert("3","c");
+    bpt.insert("3","c");
     // bpt.insert("4a","d");
     // bpt.insert("5","e");
     // bpt.insert("6","f");
@@ -82,7 +82,7 @@ int main(){
 	// bpt.insert("10","hello");
 	// bpt.insert("11","hi"); 
 	// bpt.insert("12","C++");
-    // // bpt.remove("5");
+    bpt.remove("5");
 	
 	// bpt["5"] = "sg";
 	// //cout << bpt["5"]<<endl;
@@ -96,11 +96,11 @@ int main(){
 
 	// BPTree<string,string,greater<string>>::iterator it_b;
 
-	// it_b =find(bpt.begin(),bpt.end(),"10");
+	it_b =find(bpt.begin(),bpt.end(),"10");
 
-	// if (it_b != bpt.end()){
-	// 	cout << *it_b<< endl;
-	// }
+	if (it_b != bpt.end()){
+		cout << *it_b<< endl;
+	}
 
 	// replace(bpt.begin(),bpt.end(),string("9"),string("9_new"));
     // bpt.display_tree();
