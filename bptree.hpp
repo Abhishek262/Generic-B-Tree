@@ -14,10 +14,10 @@ int def_max = 3; //size of each node
 
 //find, copy , upper bound, lower bound,replace STL functions : iterator
 //make data stored generic and its pointers
-template<typename k, typename v>
+template<typename k, typename v, class Compare>
 class BPTree;
 
-template <typename k_type, typename val_type>
+template <typename k_type, typename val_type, class Compare>
 class Node
 {
 	bool IS_LEAF;
@@ -25,43 +25,43 @@ class Node
 	val_type *record;
 	int size;
 	int MAX;
-	Node<k_type,val_type>** ptr;
-	friend class BPTree<k_type,val_type>;
-	friend class BPTree<k_type,val_type>::iterator;
+	Node<k_type,val_type,Compare>** ptr;
+	friend class BPTree<k_type,val_type,Compare>;
+	friend class BPTree<k_type,val_type,Compare>::iterator;
 
 public:
 	Node();
 	Node(int MAX);
 	Node(const Node& n);
-	Node<k_type,val_type>& operator= (const Node& N);
+	Node<k_type,val_type,Compare>& operator= (const Node& N);
 };
 
-template <typename k_type = int, typename val_type = int>	
+template <typename k_type = int, typename val_type = int, class Compare = std::less<k_type>>	
 class BPTree
 {
-	Node<k_type,val_type> *root;
+	Node<k_type,val_type,Compare> *root;
 	int MAX;
-	void insertInternal(k_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
-	void removeInternal(k_type,Node<k_type,val_type>*,Node<k_type,val_type>*);
-	Node<k_type,val_type>* findParent(Node<k_type,val_type>*,Node<k_type,val_type>*);
+	void insertInternal(k_type,Node<k_type,val_type,Compare>*,Node<k_type,val_type,Compare>*);
+	void removeInternal(k_type,Node<k_type,val_type,Compare>*,Node<k_type,val_type,Compare>*);
+	Node<k_type,val_type,Compare>* findParent(Node<k_type,val_type,Compare>*,Node<k_type,val_type,Compare>*);
 
 public:
 
 	BPTree();
 	BPTree(int MAX);
 	BPTree(const BPTree& T);
-	BPTree<k_type,val_type>& operator= (const BPTree<k_type,val_type>& T);
+	BPTree<k_type,val_type,Compare>& operator= (const BPTree<k_type,val_type,Compare>& T);
 	//move
 	bool search(k_type);
 	void insert(k_type,val_type);
 	void remove(k_type);
-	void display(Node<k_type,val_type>*);
+	void display(Node<k_type,val_type,Compare>*);
 	void display_tree();
 	bool empty();
-	Node<k_type,val_type> *copy_recursive(Node<k_type,val_type> *r);
+	Node<k_type,val_type,Compare> *copy_recursive(Node<k_type,val_type,Compare> *r);
 	val_type& operator[] (k_type key);
-	Node<k_type,val_type>* getRoot();
-	void cleanUp(Node<k_type,val_type>*);
+	Node<k_type,val_type,Compare>* getRoot();
+	void cleanUp(Node<k_type,val_type,Compare>*);
 	~BPTree(); 
 
 
@@ -75,17 +75,19 @@ public:
 			typedef ptrdiff_t difference_type;
 			typedef val_type value_type;
 			typedef k_type key_type;
+			typedef Compare key_compare;
+			typedef Compare value_compare;
 
 		private:
 			int curr_slot;
-			Node<k_type,val_type>* curr_leaf;
+			Node<k_type,val_type,Compare>* curr_leaf;
 			//maybe friend bptree
 		public:
 			//default constructor
 			iterator() : curr_leaf(nullptr), curr_slot(0)
 			{}
 			// constructor with 2 args
-			iterator(Node<k_type,val_type> *leafNode,int s) : curr_leaf(leafNode),curr_slot(s)
+			iterator(Node<k_type,val_type,Compare> *leafNode,int s) : curr_leaf(leafNode),curr_slot(s)
 			{}
 			//copy constructor
 			iterator(const iterator& N) : curr_slot(N.curr_slot)
@@ -160,7 +162,7 @@ public:
 	};
 
 
-	Node<k_type,val_type>* getFirstNode(Node<k_type,val_type> *root){
+	Node<k_type,val_type,Compare>* getFirstNode(Node<k_type,val_type,Compare> *root){
 		if(root==NULL){
 			return NULL;
 		}
@@ -171,7 +173,7 @@ public:
 		return getFirstNode(root->ptr[0]);
 	}
 
-	Node<k_type,val_type>* getLastNode(Node<k_type,val_type> *root){
+	Node<k_type,val_type,Compare>* getLastNode(Node<k_type,val_type,Compare> *root){
 		if(root==NULL){
 			return NULL;
 		}
@@ -188,7 +190,7 @@ public:
 
 	iterator end() {
 		int slot;
-		Node<k_type,val_type> *last = getLastNode(root);
+		Node<k_type,val_type,Compare> *last = getLastNode(root);
 		if(last==NULL){
 			slot = 0;
 		}
@@ -199,37 +201,37 @@ public:
     }
 };
 
-template <typename k_type, typename val_type>	
-Node<k_type,val_type>::Node()
+template <typename k_type, typename val_type, class Compare>	
+Node<k_type,val_type,Compare>::Node()
 {
 	//dynamic memory allocation
 	MAX = def_max;
 	key = new k_type[MAX];
 	record = new val_type[MAX];
-	ptr = new Node<k_type,val_type>*[MAX+1];
+	ptr = new Node<k_type,val_type,Compare>*[MAX+1];
 	IS_LEAF = false;
 }
 
-template <typename k_type, typename val_type>	
-Node<k_type,val_type>::Node(int MAX)
+template <typename k_type, typename val_type, class Compare>	
+Node<k_type,val_type,Compare>::Node(int MAX)
 {
 	//dynamic memory allocation
 	MAX = MAX;
 	key = new k_type[MAX];
 	record = new val_type[MAX];
-	ptr = new Node<k_type,val_type>*[MAX+1];
+	ptr = new Node<k_type,val_type,Compare>*[MAX+1];
 	IS_LEAF = false;
 }
 
-template <typename k_type, typename val_type>	
-Node<k_type,val_type>::Node(const Node& n)
+template <typename k_type, typename val_type, class Compare>	
+Node<k_type,val_type,Compare>::Node(const Node& n)
 {
 	MAX = n.MAX;
 	IS_LEAF = n.IS_LEAF;
 	size = n.size;
 	key = new k_type[MAX];
 	record = new val_type[MAX];
-	ptr = new Node<k_type,val_type>*[MAX+1];
+	ptr = new Node<k_type,val_type,Compare>*[MAX+1];
 	for(int i = 0; i < size; i++){
 		key[i] = n.key[i];
 	}
@@ -238,8 +240,8 @@ Node<k_type,val_type>::Node(const Node& n)
 	}
 }
 
-template <typename k_type, typename val_type>	
-Node<k_type,val_type>& Node<k_type,val_type>::operator=(const Node& N){
+template <typename k_type, typename val_type, class Compare>	
+Node<k_type,val_type,Compare>& Node<k_type,val_type,Compare>::operator=(const Node& N){
 	if( this != &N)
 	{
 		delete[] key;	
@@ -265,8 +267,8 @@ Node<k_type,val_type>& Node<k_type,val_type>::operator=(const Node& N){
 	}
 }
 //default constructor
-template <typename k_type, typename val_type>	
-BPTree<k_type,val_type>::BPTree()
+template <typename k_type, typename val_type, class Compare>	
+BPTree<k_type,val_type,Compare>::BPTree()
 {
 	root = NULL;
 	MAX = def_max;
@@ -274,16 +276,16 @@ BPTree<k_type,val_type>::BPTree()
 }
 
 //constructor
-template <typename k_type, typename val_type>	
-BPTree<k_type,val_type>::BPTree(int n)
+template <typename k_type, typename val_type, class Compare>	
+BPTree<k_type,val_type,Compare>::BPTree(int n)
 {
 	root = NULL;
 	MAX = n;
 
 }
 
-template <typename k_type, typename val_type>	
-BPTree<k_type,val_type>::BPTree(const BPTree& T){
+template <typename k_type, typename val_type, class Compare>	
+BPTree<k_type,val_type,Compare>::BPTree(const BPTree& T){
 	if(T.root == NULL){
 		root = NULL;
 	}
@@ -293,8 +295,8 @@ BPTree<k_type,val_type>::BPTree(const BPTree& T){
 	}
 }
 
-template <typename k_type, typename val_type>	
-bool BPTree<k_type,val_type>::empty(){
+template <typename k_type, typename val_type, class Compare>	
+bool BPTree<k_type,val_type,Compare>::empty(){
 	if(root==NULL){
 		return true;
 	}
@@ -303,13 +305,13 @@ bool BPTree<k_type,val_type>::empty(){
 	}
 }
 
-template <typename k_type, typename val_type>	
-Node<k_type,val_type>* BPTree<k_type,val_type>::copy_recursive(Node<k_type,val_type> *r){
+template <typename k_type, typename val_type, class Compare>	
+Node<k_type,val_type,Compare>* BPTree<k_type,val_type,Compare>::copy_recursive(Node<k_type,val_type,Compare> *r){
 	if( r == NULL){
 		return NULL;
 	}
 
-	Node<k_type,val_type> *NewNode = new Node<k_type,val_type>(*r);
+	Node<k_type,val_type,Compare> *NewNode = new Node<k_type,val_type,Compare>(*r);
 
 	for( int i = 0; i <= r->size; i++){
 		NewNode->ptr[i] = copy_recursive(r->ptr[i]);
@@ -317,8 +319,8 @@ Node<k_type,val_type>* BPTree<k_type,val_type>::copy_recursive(Node<k_type,val_t
 	return NewNode;
 }
 
-template <typename k_type, typename val_type>	
-BPTree<k_type,val_type>& BPTree<k_type,val_type>::operator=(const BPTree<k_type,val_type> &T){
+template <typename k_type, typename val_type, class Compare>	
+BPTree<k_type,val_type,Compare>& BPTree<k_type,val_type, Compare>::operator=(const BPTree<k_type,val_type, Compare> &T){
 	if(this != &T){
 		cleanUp(this->root);
 		if(T.root == NULL){
@@ -332,8 +334,8 @@ BPTree<k_type,val_type>& BPTree<k_type,val_type>::operator=(const BPTree<k_type,
 	return *this;
 }
 
-template <typename k_type, typename val_type>	
-val_type& BPTree<k_type,val_type>::operator[] (k_type key){
+template <typename k_type, typename val_type, class Compare>	
+val_type& BPTree<k_type,val_type,Compare>::operator[] (k_type key){
 
 	iterator it_b;
 	it_b =find(begin(),end(),key);
@@ -347,8 +349,8 @@ val_type& BPTree<k_type,val_type>::operator[] (k_type key){
 }
 
 
-template <typename k_type, typename val_type>	
-bool BPTree<k_type,val_type>::search(k_type x)
+template <typename k_type, typename val_type, class Compare>	
+bool BPTree<k_type,val_type, Compare>::search(k_type x)
 {
 	//search logic
 	if(root==NULL)
@@ -358,7 +360,7 @@ bool BPTree<k_type,val_type>::search(k_type x)
 	}
 	else
 	{
-		Node<k_type,val_type>* cursor = root;
+		Node<k_type,val_type,Compare>* cursor = root;
 		//in the following while loop, cursor will travel to the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
 		{
@@ -391,13 +393,13 @@ bool BPTree<k_type,val_type>::search(k_type x)
 }
 
 
-template <typename k_type, typename val_type>	
-void BPTree<k_type,val_type>::insert(k_type x,val_type y)
+template <typename k_type, typename val_type, class Compare>	
+void BPTree<k_type,val_type,  Compare>::insert(k_type x,val_type y)
 {
 	//insert logic
 	if(root==NULL)
 	{
-		root = new Node<k_type,val_type>;
+		root = new Node<k_type,val_type,Compare>;
 		root->key[0] = x;
         root->record[0] = y;
 		root->IS_LEAF = true;
@@ -406,8 +408,8 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 	}
 	else
 	{
-		Node<k_type,val_type>* cursor = root;
-		Node<k_type,val_type>* parent;
+		Node<k_type,val_type,Compare>* cursor = root;
+		Node<k_type,val_type,Compare>* parent;
 		//in the following while loop, cursor will travel to OverfloOverflow in leaf node!w in leaf node!the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
 		{
@@ -454,7 +456,7 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 			//cout<<"Overflow in leaf node!\nSplitting leaf node\n";
 			//overflow condition
 			//create new leaf node
-			Node<k_type,val_type>* newLeaf = new Node<k_type,val_type>;
+			Node<k_type,val_type,Compare>* newLeaf = new Node<k_type,val_type,Compare>;
 			k_type virtualNode[MAX+1];
 			val_type virtualValNode[MAX+1];
 			for(int i = 0; i < MAX; i++)
@@ -501,7 +503,7 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 			if(cursor == root)
 			{
 				//if cursor is a root node, we create a new root
-				Node<k_type,val_type>* newRoot = new Node<k_type,val_type>;
+				Node<k_type,val_type,Compare>* newRoot = new Node<k_type,val_type,Compare>;
 				newRoot->key[0] = newLeaf->key[0];
 				newRoot->record[0] = newLeaf->record[0];
 				newRoot->ptr[0] = cursor;
@@ -520,8 +522,8 @@ void BPTree<k_type,val_type>::insert(k_type x,val_type y)
 	}
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::insertInternal(k_type x, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type, Compare>::insertInternal(k_type x, Node<k_type,val_type,Compare>* cursor, Node<k_type,val_type,Compare>* child)
 {
 	if(cursor->size < MAX)
 	{
@@ -551,11 +553,11 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, Node<k_type,val_type>* cu
 		//cout<<"Overflow in internal node!\nSplitting internal node\n";
 		//if overflow in internal node
 		//create new internal node
-		Node<k_type,val_type>* newInternal = new Node<k_type,val_type>;
+		Node<k_type,val_type,Compare>* newInternal = new Node<k_type,val_type,Compare>;
 		//create virtual Internal Node;
 		k_type virtualKey[MAX+1];
 
-		Node<k_type,val_type>* virtualPtr[MAX+2];
+		Node<k_type,val_type,Compare>* virtualPtr[MAX+2];
 		for(int i = 0; i < MAX; i++)
 		{
 			virtualKey[i] = cursor->key[i];
@@ -611,7 +613,7 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, Node<k_type,val_type>* cu
 		if(cursor == root)
 		{
 			//if cursor is a root node, we create a new root
-			Node<k_type,val_type>* newRoot = new Node<k_type,val_type>;
+			Node<k_type,val_type,Compare>* newRoot = new Node<k_type,val_type,Compare>;
 			newRoot->key[0] = cursor->key[cursor->size];
 			newRoot->ptr[0] = cursor;
 			newRoot->ptr[1] = newInternal;
@@ -629,8 +631,8 @@ void BPTree<k_type,val_type>::insertInternal(k_type x, Node<k_type,val_type>* cu
 	}
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::remove(k_type x)
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type, Compare>::remove(k_type x)
 {
 	//delete logic
 	if(root==NULL)
@@ -639,8 +641,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 	}
 	else
 	{
-		Node<k_type,val_type>* cursor = root;
-		Node<k_type,val_type>* parent;
+		Node<k_type,val_type,Compare>* cursor = root;
+		Node<k_type,val_type,Compare>* parent;
 		int leftSibling, rightSibling;
 		//in the following while loop, cursor will will travel to the leaf node possibly consisting the key
 		while(cursor->IS_LEAF == false)
@@ -722,7 +724,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		//check if left sibling exists
 		if(leftSibling >= 0)
 		{
-			Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
+			Node<k_type,val_type,Compare> *leftNode = parent->ptr[leftSibling];
 			//check if it is possible to transfer
 			if(leftNode->size >= (MAX+1)/2+1)
 			{
@@ -755,7 +757,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		}
 		if(rightSibling <= parent->size)//check if right sibling exist
 		{
-			Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
+			Node<k_type,val_type,Compare> *rightNode = parent->ptr[rightSibling];
 			//check if it is possible to transfer
 			if(rightNode->size >= (MAX+1)/2+1)
 			{
@@ -787,7 +789,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		//must merge and delete a node
 		if(leftSibling >= 0)//if left sibling exist
 		{
-			Node<k_type,val_type>* leftNode = parent->ptr[leftSibling];
+			Node<k_type,val_type,Compare>* leftNode = parent->ptr[leftSibling];
 			// transfer all keys to leftsibling and then transfer pointer to next leaf node
 			for(int i = leftNode->size, j = 0; j < cursor->size; i++, j++)
 			{
@@ -807,7 +809,7 @@ void BPTree<k_type,val_type>::remove(k_type x)
 		}
 		else if(rightSibling <= parent->size)//if right sibling exist
 		{
-			Node<k_type,val_type>* rightNode = parent->ptr[rightSibling];
+			Node<k_type,val_type,Compare>* rightNode = parent->ptr[rightSibling];
 			// transfer all keys to cursor and then transfer pointer to next leaf node
 			for(int i = cursor->size, j = 0; j < rightNode->size; i++, j++)
 			{
@@ -828,8 +830,8 @@ void BPTree<k_type,val_type>::remove(k_type x)
 	}
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type,Compare>::removeInternal(k_type x, Node<k_type,val_type,Compare>* cursor, Node<k_type,val_type,Compare>* child)
 {
 	//deleting the key x first
 	//checking if key from root is to be deleted
@@ -902,7 +904,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	//cout<<"Underflow in internal node!\n";
 	//underflow, try to transfer first
 	if(cursor==root)return;
-	Node<k_type,val_type>* parent = findParent(root, cursor);
+	Node<k_type,val_type,Compare>* parent = findParent(root, cursor);
 	int leftSibling, rightSibling;
 	//finding left n right sibling of cursor
 	for(pos = 0; pos < parent->size+1; pos++)
@@ -917,7 +919,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	//try to transfer
 	if(leftSibling >= 0)//if left sibling exists
 	{
-		Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
+		Node<k_type,val_type,Compare> *leftNode = parent->ptr[leftSibling];
 		//check if it is possible to transfer
 		if(leftNode->size >= (MAX+1)/2)
 		{
@@ -951,7 +953,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	}
 	if(rightSibling <= parent->size)//check if right sibling exist
 	{
-		Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
+		Node<k_type,val_type,Compare> *rightNode = parent->ptr[rightSibling];
 		//check if it is possible to transfer
 		if(rightNode->size >= (MAX+1)/2)
 		{
@@ -986,7 +988,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	if(leftSibling >= 0)
 	{
 		//leftnode + parent key + cursor
-		Node<k_type,val_type> *leftNode = parent->ptr[leftSibling];
+		Node<k_type,val_type,Compare> *leftNode = parent->ptr[leftSibling];
 		leftNode->key[leftNode->size] = parent->key[leftSibling];
 		leftNode->record[leftNode->size] = parent->record[leftSibling];
     
@@ -1011,7 +1013,7 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 	else if(rightSibling <= parent->size)
 	{
 		//cursor + parent key + rightnode
-		Node<k_type,val_type> *rightNode = parent->ptr[rightSibling];
+		Node<k_type,val_type,Compare> *rightNode = parent->ptr[rightSibling];
 		cursor->key[cursor->size] = parent->key[rightSibling-1];
 		for(int i = cursor->size+1, j = 0; j < rightNode->size; j++)
 		{
@@ -1033,12 +1035,12 @@ void BPTree<k_type,val_type>::removeInternal(k_type x, Node<k_type,val_type>* cu
 }
 
 
-template<typename k_type, typename val_type>
-Node<k_type,val_type>* BPTree<k_type,val_type>::findParent(Node<k_type,val_type>* cursor, Node<k_type,val_type>* child)
+template<typename k_type, typename val_type, class Compare>
+Node<k_type,val_type,Compare>* BPTree<k_type,val_type,  Compare>::findParent(Node<k_type,val_type,Compare>* cursor, Node<k_type,val_type,Compare>* child)
 {
 	//finds parent using depth first traversal and ignores leaf nodes as they cannot be parents
 	//also ignores second last level because we will never find parent of a leaf node during insertion using this function
-	Node<k_type,val_type>* parent;
+	Node<k_type,val_type,Compare>* parent;
 	if(cursor->IS_LEAF || (cursor->ptr[0])->IS_LEAF)
 	{
 		return NULL;
@@ -1059,8 +1061,8 @@ Node<k_type,val_type>* BPTree<k_type,val_type>::findParent(Node<k_type,val_type>
 	return parent;
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::display(Node<k_type,val_type>* cursor)
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type,Compare>::display(Node<k_type,val_type,Compare>* cursor)
 {
 	//depth first display
 	if(cursor!=NULL)
@@ -1091,8 +1093,8 @@ void BPTree<k_type,val_type>::display(Node<k_type,val_type>* cursor)
 
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::display_tree(){
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type, Compare>::display_tree(){
 	cout << "______________________________________\n";
 	display(getRoot());
 	cout << "______________________________________\n";
@@ -1100,14 +1102,14 @@ void BPTree<k_type,val_type>::display_tree(){
 }
 
 
-template<typename k_type, typename val_type>
-Node<k_type,val_type>* BPTree<k_type,val_type>::getRoot()
+template<typename k_type, typename val_type, class Compare>
+Node<k_type,val_type,Compare>* BPTree<k_type,val_type,  Compare>::getRoot()
 {
 	return root;
 }
 
-template<typename k_type, typename val_type>
-void BPTree<k_type,val_type>::cleanUp(Node<k_type,val_type>* cursor)
+template<typename k_type, typename val_type, class Compare>
+void BPTree<k_type,val_type,  Compare>::cleanUp(Node<k_type,val_type,Compare>* cursor)
 {
 	//clean up logic
 	if(cursor!=NULL)
@@ -1130,8 +1132,8 @@ void BPTree<k_type,val_type>::cleanUp(Node<k_type,val_type>* cursor)
 	}
 }
 
-template<typename k_type, typename val_type>
-BPTree<k_type,val_type>::~BPTree()
+template<typename k_type, typename val_type, class Compare>
+BPTree<k_type,val_type, Compare>::~BPTree()
 {
 	//calling cleanUp routine
 	cleanUp(root);
