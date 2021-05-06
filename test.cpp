@@ -36,12 +36,6 @@ public:
         return lhs.val > rhs.val;
     }
 
-	friend bool operator%(const newType &lhs, const newType &rhs){
-		cout<< lhs.val <<" "<< rhs.val<<endl;
-		
-		return lhs.val % rhs.val;
-	}
-
     friend bool operator<(const newType &lhs, const newType &rhs){
         return lhs.val < rhs.val;
     }
@@ -55,7 +49,8 @@ public:
 
 struct compareMod{
 	bool operator()(newType& x1, newType& x2){
-		return (x1%10) > (x2%10);
+		// return (x1%10) > (x2%10);
+		return x1.val%10 >   x2.val%10;	
 	}
 };
 
@@ -67,7 +62,14 @@ int main(){
 
     bpt.insert(newType(6),newType(8));
     bpt.insert(newType(16),newType(28));
-    bpt.insert(newType(62),newType(18));
+    bpt.insert(newType(12),newType(18));
+
+    bpt.insert(newType(32),newType(19));
+    bpt.insert(newType(22),newType(20));
+    bpt.insert(newType(72),newType(21));
+    bpt.insert(newType(34),newType(22));
+
+    bpt.insert(newType(62),newType(23));
 
     // bpt.insert("2","b");
 
