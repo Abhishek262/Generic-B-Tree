@@ -2,6 +2,9 @@
 #include <string>
 #include "bptree.hpp"
 
+
+
+
 int main(){
 	BPTree<string,string> bpt(3);
 	BPTree<string,string> bpt3;
@@ -17,7 +20,7 @@ int main(){
 	bpt.insert("8","a");
 	bpt.insert("9","hi");
 	bpt.insert("10","hello");
-	bpt.insert("11","hi");
+	bpt.insert("11","hi"); 
 	bpt.insert("12","C++");
     // bpt.remove("5");
 	

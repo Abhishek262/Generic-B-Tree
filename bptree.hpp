@@ -357,6 +357,7 @@ bool BPTree<k_type,val_type, Compare>::search(k_type x)
 	{
 		//empty
 		cout<<"Tree empty\n";
+		return false;
 	}
 	else
 	{
