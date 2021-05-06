@@ -58,43 +58,43 @@ Example usage
 Member Types
 --------------
 
-|Member_type				|	definition                   |
-|---------------------------|--------------------------------|
-|K_type					    |	key type for the B+ tree     |
-|Val_type				    |	record type for the B+ tree  |
-|pointer |k_type* |
-|reference |K_type&|
-|iterator| A forward iterator which returns a pointer to node and |position of key in node|
-|forward_iterator_tag |iterator_category|
-|difference_type |ptrdiff_t|
-|key_compare |Compare|
-|value_compare |Compare|
+|Member_type				|	definition                                                                   |
+|---------------------------|--------------------------------------------------------------------------------|
+|K_type					    |	key type for the B+ tree                                                     |
+|Val_type				    |	record type for the B+ tree                                                  |
+|pointer                    |k_type*                                                                         |
+|reference                  |K_type&                                                                         |
+|iterator                   | A forward iterator which returns a pointer to node and position of key in node|
+|forward_iterator_tag       |iterator_category                                                               |
+|difference_type            |ptrdiff_t                                                                       |
+|key_compare                |Compare                                                                         |
+|value_compare              |Compare                                                                         |
 
 <br>
 Member Functions
 ----------------- 
 
-|Member_type				|	definition                   |
-|---------------------------|--------------------------------|
-|Constructor BPTree() |Constructs the B+ Tree|
-|Destructor ~BPTree() |Destructs the B+ Tree|
-|Copy Constructor BPTree(const BPTree& T); |Copy Constructor|
-|copy_recursive |Helper function used by assignment operator and copy |constructor|
-|operator= |Assignment operator|
-|display_tree |Displays the complete B+ Tree|
-|getRoot() |Helper function used that returns the root node.|
+|Member_type				               |	definition                                                  |
+|------------------------------------------|----------------------------------------------------------------|
+|Constructor BPTree()                      |Constructs the B+ Tree                                          |
+|Destructor ~BPTree()                      |Destructs the B+ Tree                                           |
+|Copy Constructor BPTree(const BPTree& T); |Copy Constructor                                                |
+|copy_recursive                            |Helper function used by assignment operator and copy constructor|
+|operator=                                 |Assignment operator                                             |
+|display_tree                              |Displays the complete B+ Tree                                   |
+|getRoot()                                 |Helper function used that returns the root node.                |
 
 Modifiers
 -----------
 
-|Modifier				    |	definition                   |
-|---------------------------|--------------------------------|
-insert(key, record)  |  Inserts a key and a record pair to the tree|
+|Modifier				    |	definition                                                         |
+|---------------------------|----------------------------------------------------------------------|
+insert(key, record)         |  Inserts a key and a record pair to the tree                         |
 insertInternal(key,record)  |  Helper function for insert(). Implements insertion in internal nodes|
-remove(key)  |  Removes specified key from the tree|
-removeInternal(key)  |  Helper function for remove(). Implements removal in internal nodes|
-cleanUp()  |  Removes all key-record pairs from the tree |
-operator[key]  |  Returns a reference to the record value pertaining to a particular key. Use this to modify record values for a given key|
+remove(key)                 |  Removes specified key from the tree                                 |
+removeInternal(key)         |  Helper function for remove(). Implements removal in internal nodes  |
+cleanUp()                   |  Removes all key-record pairs from the tree                          |
+operator[key]               |  Returns a reference to the record value pertaining to a particular key. Use this to modify record values for a given key|
 
 Lookup
 -----------
