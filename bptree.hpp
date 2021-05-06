@@ -366,7 +366,7 @@ bool BPTree<k_type,val_type, Compare>::search(k_type x)
 		{
 			for(int i = 0; i < cursor->size; i++)
 			{
-				if(x < cursor->key[i])
+				if(Compare()(x, cursor->key[i]))
 				{
 					cursor = cursor->ptr[i];
 					break;
@@ -416,7 +416,7 @@ void BPTree<k_type,val_type,  Compare>::insert(k_type x,val_type y)
 			parent = cursor;
 			for(int i = 0; i < cursor->size; i++)
 			{
-				if(x < cursor->key[i])
+				if(Compare()(x, cursor->key[i]))
 				{
 					cursor = cursor->ptr[i];
 					break;
@@ -434,7 +434,7 @@ void BPTree<k_type,val_type,  Compare>::insert(k_type x,val_type y)
 			//if cursor is not full
 			//find the correct position for new key
 			int i = 0;
-			while(x > cursor->key[i] && i < cursor->size) i++;
+			while(!Compare()(x, cursor->key[i]) && i < cursor->size) i++;
 			//make space for new key
 			for(int j = cursor->size;j > i; j--)
 			{
@@ -465,7 +465,7 @@ void BPTree<k_type,val_type,  Compare>::insert(k_type x,val_type y)
 				virtualValNode[i] = cursor->record[i];
 			}
 			int i = 0, j;
-			while(x > virtualNode[i] && i < MAX) i++;
+			while(!Compare()(x, virtualNode[i]) && i < MAX) i++;
 			//make space for new key
 			for(int j = MAX;j > i; j--)
 			{
@@ -530,7 +530,7 @@ void BPTree<k_type,val_type, Compare>::insertInternal(k_type x, Node<k_type,val_
 		//if cursor is not full
 		//find the correct position for new key
 		int i = 0;
-		while(x > cursor->key[i] && i < cursor->size) i++;
+		while(!Compare()(x, cursor->key[i])  && i < cursor->size) i++;
 		//make space for new key
 		for(int j = cursor->size;j > i; j--)
 		{
@@ -568,7 +568,7 @@ void BPTree<k_type,val_type, Compare>::insertInternal(k_type x, Node<k_type,val_
 			virtualPtr[i] = cursor->ptr[i];
 		}
 		int i = 0, j;
-		while(x > virtualKey[i] && i < MAX) i++;
+		while(!Compare()(x, virtualKey[i])  && i < MAX) i++;
 		//make space for new key
 		for(int j = MAX;j > i; j--)
 		{
